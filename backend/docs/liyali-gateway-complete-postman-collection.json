@@ -1,0 +1,2054 @@
+{
+  "info": {
+    "name": "Tether-ERP API - Complete Collection",
+    "description": "Complete API collection for Tether-ERP Backend with all endpoints, organized by functionality",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set correlation ID for request tracing",
+          "pm.request.headers.add({",
+          "  key: 'X-Correlation-ID',",
+          "  value: pm.variables.replaceIn('{{$guid}}')",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "User authentication and session management endpoints",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has user and tokens', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.user).to.exist;",
+                  "    pm.expect(jsonData.data.tokens).to.exist;",
+                  "    pm.expect(jsonData.data.tokens.accessToken).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"SecurePassword123!\",\n  \"name\": \"{{$randomFullName}}\",\n  \"organizationId\": \"{{organization_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new user account"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has tokens', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.tokens.accessToken).to.exist;",
+                  "    pm.expect(jsonData.data.tokens.refreshToken).to.exist;",
+                  "    ",
+                  "    // Save tokens for other requests",
+                  "    pm.environment.set('auth_token', jsonData.data.tokens.accessToken);",
+                  "    pm.environment.set('refresh_token', jsonData.data.tokens.refreshToken);",
+                  "    pm.environment.set('user_id', jsonData.data.user.id);",
+                  "    pm.environment.set('organization_id', jsonData.data.user.organizationId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@tether-erp.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate user and get JWT tokens"
+          }
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{auth_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "verify"]
+            },
+            "description": "Verify if a JWT token is valid"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.data.tokens.accessToken);",
+                  "    pm.environment.set('refresh_token', jsonData.data.tokens.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Refresh access token using refresh token"
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "profile"]
+            },
+            "description": "Get current user profile information"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"admin123\",\n  \"newPassword\": \"NewSecurePassword123!\",\n  \"confirmPassword\": \"NewSecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Change user password"
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@tether-erp.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/password-reset/request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "password-reset", "request"]
+            },
+            "description": "Request password reset email"
+          }
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"newPassword\": \"NewSecurePassword123!\",\n  \"confirmPassword\": \"NewSecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/password-reset/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "password-reset", "confirm"]
+            },
+            "description": "Confirm password reset with token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Logout current session"
+          }
+        },
+        {
+          "name": "Logout All Sessions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout-all"]
+            },
+            "description": "Logout all user sessions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Organizations",
+      "description": "Organization management and multi-tenancy endpoints",
+      "item": [
+        {
+          "name": "Create Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('organization_id', jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{$randomCompanyName}}\",\n  \"description\": \"Leading technology company\",\n  \"address\": \"123 Business St, City, State 12345\",\n  \"phone\": \"+1-555-0123\",\n  \"email\": \"contact@company.com\",\n  \"website\": \"https://company.com\",\n  \"industry\": \"Technology\",\n  \"size\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organizations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organizations"]
+            },
+            "description": "Create a new organization"
+          }
+        },
+        {
+          "name": "Get User Organizations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organizations?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organizations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get organizations user has access to"
+          }
+        },
+        {
+          "name": "Update Organization",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Company Name\",\n  \"description\": \"Updated company description\",\n  \"phone\": \"+1-555-0124\",\n  \"website\": \"https://updated-company.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organizations/{{organization_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organizations", "{{organization_id}}"]
+            },
+            "description": "Update organization details"
+          }
+        },
+        {
+          "name": "Switch Organization",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.data.tokens.accessToken);",
+                  "    pm.environment.set('organization_id', jsonData.data.user.organizationId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organizations/{{organization_id}}/switch",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organizations", "{{organization_id}}", "switch"]
+            },
+            "description": "Switch to different organization context"
+          }
+        },
+        {
+          "name": "Get Organization Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/members?page=1&limit=20&role=user",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "members"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "role",
+                  "value": "user"
+                }
+              ]
+            },
+            "description": "Get organization members"
+          }
+        },
+        {
+          "name": "Add Organization Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{$randomEmail}}\",\n  \"name\": \"{{$randomFullName}}\",\n  \"roles\": [\"user\"],\n  \"department\": \"IT\",\n  \"position\": \"Developer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/members",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "members"]
+            },
+            "description": "Add new member to organization"
+          }
+        },
+        {
+          "name": "Remove Organization Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/members/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "members", "{{user_id}}"]
+            },
+            "description": "Remove member from organization"
+          }
+        },
+        {
+          "name": "Get Organization Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "settings"]
+            },
+            "description": "Get organization settings"
+          }
+        },
+        {
+          "name": "Update Organization Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"USD\",\n  \"timezone\": \"America/New_York\",\n  \"dateFormat\": \"MM/DD/YYYY\",\n  \"approvalWorkflow\": \"standard\",\n  \"autoApprovalLimit\": 1000.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "settings"]
+            },
+            "description": "Update organization settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Roles & Permissions",
+      "description": "Role-based access control and permission management",
+      "item": [
+        {
+          "name": "Get Organization Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles?active=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles"],
+              "query": [
+                {
+                  "key": "active",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get all organization roles"
+          }
+        },
+        {
+          "name": "Create Organization Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('role_id', jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Department Manager\",\n  \"description\": \"Manages department operations and approvals\",\n  \"permissions\": [\n    \"requisition.view\",\n    \"requisition.create\",\n    \"requisition.approve\",\n    \"budget.view\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles"]
+            },
+            "description": "Create new organization role"
+          }
+        },
+        {
+          "name": "Update Organization Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Senior Department Manager\",\n  \"description\": \"Senior manager with extended permissions\",\n  \"permissions\": [\n    \"requisition.view\",\n    \"requisition.create\",\n    \"requisition.approve\",\n    \"budget.view\",\n    \"budget.create\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles/{{role_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles", "{{role_id}}"]
+            },
+            "description": "Update organization role"
+          }
+        },
+        {
+          "name": "Delete Organization Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles/{{role_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles", "{{role_id}}"]
+            },
+            "description": "Delete organization role"
+          }
+        },
+        {
+          "name": "Get Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles/{{role_id}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles", "{{role_id}}", "permissions"]
+            },
+            "description": "Get permissions for a specific role"
+          }
+        },
+        {
+          "name": "Assign Permission to Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles/{{role_id}}/permissions/{{permission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles", "{{role_id}}", "permissions", "{{permission_id}}"]
+            },
+            "description": "Assign permission to role"
+          }
+        },
+        {
+          "name": "Remove Permission from Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/roles/{{role_id}}/permissions/{{permission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "roles", "{{role_id}}", "permissions", "{{permission_id}}"]
+            },
+            "description": "Remove permission from role"
+          }
+        },
+        {
+          "name": "Get Organization Permissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/organization/permissions?category=requisition",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "organization", "permissions"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "requisition"
+                }
+              ]
+            },
+            "description": "Get all available permissions"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Requisitions",
+      "description": "Purchase requisition management endpoints",
+      "item": [
+        {
+          "name": "Create Requisition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('requisition_id', jsonData.data.id);",
+                  "    pm.environment.set('document_number', jsonData.data.documentNumber);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Office Equipment Purchase\",\n  \"description\": \"Monthly office equipment and supplies for IT department\",\n  \"department\": \"IT\",\n  \"priority\": \"medium\",\n  \"items\": [\n    {\n      \"name\": \"MacBook Pro 16-inch\",\n      \"description\": \"Apple MacBook Pro with M2 chip\",\n      \"quantity\": 2,\n      \"unitPrice\": 2499.00,\n      \"totalPrice\": 4998.00,\n      \"category\": \"Electronics\",\n      \"specifications\": {\n        \"brand\": \"Apple\",\n        \"model\": \"MacBook Pro 16-inch\",\n        \"processor\": \"M2 Pro\",\n        \"memory\": \"16GB\",\n        \"storage\": \"512GB SSD\"\n      }\n    },\n    {\n      \"name\": \"Wireless Mouse\",\n      \"description\": \"Ergonomic wireless mouse\",\n      \"quantity\": 2,\n      \"unitPrice\": 79.99,\n      \"totalPrice\": 159.98,\n      \"category\": \"Accessories\"\n    }\n  ],\n  \"totalAmount\": 5157.98,\n  \"currency\": \"USD\",\n  \"justification\": \"Replacement for old equipment and new hire setup\",\n  \"expectedDeliveryDate\": \"2024-02-15T00:00:00Z\",\n  \"budgetCode\": \"IT-2024-Q1\",\n  \"categoryId\": \"{{category_id}}\",\n  \"preferredVendorId\": \"{{vendor_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions"]
+            },
+            "description": "Create a new purchase requisition"
+          }
+        },
+        {
+          "name": "Get Requisitions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions?page=1&limit=20&status=pending&department=IT&priority=medium&minAmount=1000&maxAmount=10000&startDate=2024-01-01&endDate=2024-12-31&sort=createdAt&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "key": "department",
+                  "value": "IT"
+                },
+                {
+                  "key": "priority",
+                  "value": "medium"
+                },
+                {
+                  "key": "minAmount",
+                  "value": "1000"
+                },
+                {
+                  "key": "maxAmount",
+                  "value": "10000"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                },
+                {
+                  "key": "sort",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Get requisitions with filtering and pagination"
+          }
+        },
+        {
+          "name": "Get Requisition by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions/{{requisition_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions", "{{requisition_id}}"]
+            },
+            "description": "Get a specific requisition by ID"
+          }
+        },
+        {
+          "name": "Update Requisition",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Office Equipment Purchase\",\n  \"description\": \"Updated monthly office equipment and supplies\",\n  \"priority\": \"high\",\n  \"totalAmount\": 5500.00,\n  \"justification\": \"Updated justification with additional requirements\",\n  \"expectedDeliveryDate\": \"2024-02-10T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions/{{requisition_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions", "{{requisition_id}}"]
+            },
+            "description": "Update an existing requisition"
+          }
+        },
+        {
+          "name": "Approve Requisition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Approved with minor modifications\",\n  \"conditions\": \"Delivery must be completed by end of month\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions/{{requisition_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions", "{{requisition_id}}", "approve"]
+            },
+            "description": "Approve a requisition"
+          }
+        },
+        {
+          "name": "Reject Requisition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Budget constraints - please reduce total amount\",\n  \"reason\": \"budget_exceeded\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions/{{requisition_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions", "{{requisition_id}}", "reject"]
+            },
+            "description": "Reject a requisition"
+          }
+        },
+        {
+          "name": "Reassign Requisition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedTo\": \"{{user_id}}\",\n  \"comment\": \"Reassigning to department manager for review\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions/{{requisition_id}}/reassign",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions", "{{requisition_id}}", "reassign"]
+            },
+            "description": "Reassign requisition to another user"
+          }
+        },
+        {
+          "name": "Delete Requisition",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/requisitions/{{requisition_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "requisitions", "{{requisition_id}}"]
+            },
+            "description": "Delete a requisition (soft delete)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💰 Budgets",
+      "description": "Budget management and allocation endpoints",
+      "item": [
+        {
+          "name": "Create Budget",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('budget_id', jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"IT Department Budget 2024\",\n  \"description\": \"Annual budget allocation for IT department\",\n  \"totalAmount\": 150000.00,\n  \"allocatedAmount\": 0.00,\n  \"spentAmount\": 0.00,\n  \"fiscalYear\": \"2024\",\n  \"department\": \"IT\",\n  \"startDate\": \"2024-01-01T00:00:00Z\",\n  \"endDate\": \"2024-12-31T23:59:59Z\",\n  \"currency\": \"USD\",\n  \"categories\": [\n    {\n      \"name\": \"Hardware\",\n      \"allocatedAmount\": 90000.00,\n      \"description\": \"Computer hardware and equipment\"\n    },\n    {\n      \"name\": \"Software\",\n      \"allocatedAmount\": 40000.00,\n      \"description\": \"Software licenses and subscriptions\"\n    },\n    {\n      \"name\": \"Training\",\n      \"allocatedAmount\": 20000.00,\n      \"description\": \"Staff training and certification\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets"]
+            },
+            "description": "Create a new budget"
+          }
+        },
+        {
+          "name": "Get Budgets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets?page=1&limit=20&fiscalYear=2024&department=IT&status=active",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "fiscalYear",
+                  "value": "2024"
+                },
+                {
+                  "key": "department",
+                  "value": "IT"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            },
+            "description": "Get budgets with filtering"
+          }
+        },
+        {
+          "name": "Get Budget by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets/{{budget_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets", "{{budget_id}}"]
+            },
+            "description": "Get a specific budget by ID"
+          }
+        },
+        {
+          "name": "Update Budget",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated IT Department Budget 2024\",\n  \"totalAmount\": 175000.00,\n  \"description\": \"Updated annual budget with additional allocation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets/{{budget_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets", "{{budget_id}}"]
+            },
+            "description": "Update an existing budget"
+          }
+        },
+        {
+          "name": "Approve Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Budget approved for fiscal year 2024\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets/{{budget_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets", "{{budget_id}}", "approve"]
+            },
+            "description": "Approve a budget"
+          }
+        },
+        {
+          "name": "Reject Budget",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Budget exceeds organizational limits\",\n  \"reason\": \"amount_exceeded\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets/{{budget_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets", "{{budget_id}}", "reject"]
+            },
+            "description": "Reject a budget"
+          }
+        },
+        {
+          "name": "Delete Budget",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/budgets/{{budget_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "budgets", "{{budget_id}}"]
+            },
+            "description": "Delete a budget"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛒 Purchase Orders",
+      "description": "Purchase order management endpoints",
+      "item": [
+        {
+          "name": "Create Purchase Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('purchase_order_id', jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requisitionId\": \"{{requisition_id}}\",\n  \"vendorId\": \"{{vendor_id}}\",\n  \"title\": \"MacBook Pro Purchase Order\",\n  \"description\": \"Purchase order for approved laptop requisition\",\n  \"items\": [\n    {\n      \"name\": \"MacBook Pro 16-inch\",\n      \"description\": \"Apple MacBook Pro with M2 chip\",\n      \"quantity\": 2,\n      \"unitPrice\": 2499.00,\n      \"totalPrice\": 4998.00,\n      \"specifications\": {\n        \"model\": \"MacBook Pro 16-inch\",\n        \"processor\": \"M2 Pro\",\n        \"memory\": \"16GB\",\n        \"storage\": \"512GB SSD\"\n      }\n    }\n  ],\n  \"totalAmount\": 4998.00,\n  \"currency\": \"USD\",\n  \"expectedDeliveryDate\": \"2024-02-15T00:00:00Z\",\n  \"terms\": \"Net 30 days\",\n  \"notes\": \"Deliver to main office reception\",\n  \"shippingAddress\": {\n    \"street\": \"123 Business St\",\n    \"city\": \"Business City\",\n    \"state\": \"BC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders"]
+            },
+            "description": "Create a new purchase order"
+          }
+        },
+        {
+          "name": "Get Purchase Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders?page=1&limit=20&status=pending&vendorId={{vendor_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "key": "vendorId",
+                  "value": "{{vendor_id}}"
+                }
+              ]
+            },
+            "description": "Get purchase orders with filtering"
+          }
+        },
+        {
+          "name": "Get Purchase Order by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders/{{purchase_order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders", "{{purchase_order_id}}"]
+            },
+            "description": "Get a specific purchase order by ID"
+          }
+        },
+        {
+          "name": "Update Purchase Order",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expectedDeliveryDate\": \"2024-02-10T00:00:00Z\",\n  \"notes\": \"Updated delivery instructions - deliver to IT department\",\n  \"terms\": \"Net 15 days\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders/{{purchase_order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders", "{{purchase_order_id}}"]
+            },
+            "description": "Update an existing purchase order"
+          }
+        },
+        {
+          "name": "Approve Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Purchase order approved for processing\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders/{{purchase_order_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders", "{{purchase_order_id}}", "approve"]
+            },
+            "description": "Approve a purchase order"
+          }
+        },
+        {
+          "name": "Reject Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Vendor pricing is too high\",\n  \"reason\": \"pricing_issue\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders/{{purchase_order_id}}/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders", "{{purchase_order_id}}", "reject"]
+            },
+            "description": "Reject a purchase order"
+          }
+        },
+        {
+          "name": "Delete Purchase Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/purchase-orders/{{purchase_order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "purchase-orders", "{{purchase_order_id}}"]
+            },
+            "description": "Delete a purchase order"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Document Search & Management",
+      "description": "Generic document search and management endpoints",
+      "item": [
+        {
+          "name": "Search Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/documents/search?q=laptop&type=requisition&status=approved&minAmount=1000&maxAmount=5000&page=1&limit=20&sort=relevance&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "documents", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "laptop",
+                  "description": "Search query (full-text search)"
+                },
+                {
+                  "key": "type",
+                  "value": "requisition",
+                  "description": "Document type filter"
+                },
+                {
+                  "key": "status",
+                  "value": "approved",
+                  "description": "Status filter"
+                },
+                {
+                  "key": "minAmount",
+                  "value": "1000",
+                  "description": "Minimum amount filter"
+                },
+                {
+                  "key": "maxAmount",
+                  "value": "5000",
+                  "description": "Maximum amount filter"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "Sort field (relevance, date, amount, title)"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Search across all document types with full-text search"
+          }
+        },
+        {
+          "name": "Get Document by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/documents/{{document_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "documents", "{{document_id}}"]
+            },
+            "description": "Get a specific document by ID"
+          }
+        },
+        {
+          "name": "Get Document by Number",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/documents/number/{{document_number}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "documents", "number", "{{document_number}}"]
+            },
+            "description": "Get a document by its document number"
+          }
+        },
+        {
+          "name": "Get My Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/documents/my?page=1&limit=20&type=requisition",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "documents", "my"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "type",
+                  "value": "requisition"
+                }
+              ]
+            },
+            "description": "Get documents created by current user"
+          }
+        },
+        {
+          "name": "Get Document Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/documents/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "documents", "stats"]
+            },
+            "description": "Get document statistics and counts"
+          }
+        },
+        {
+          "name": "Get Approval History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/documents/{{document_id}}/approval-history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "documents", "{{document_id}}", "approval-history"]
+            },
+            "description": "Get approval history for a document"
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚡ Workflows",
+      "description": "Workflow management and execution endpoints",
+      "item": [
+        {
+          "name": "Get Workflows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows?documentType=requisition&active=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows"],
+              "query": [
+                {
+                  "key": "documentType",
+                  "value": "requisition"
+                },
+                {
+                  "key": "active",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get workflow templates"
+          }
+        },
+        {
+          "name": "Get Default Workflow",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/default/requisition",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows", "default", "requisition"]
+            },
+            "description": "Get default workflow for document type"
+          }
+        },
+        {
+          "name": "Create Workflow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('workflow_id', jsonData.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"IT Requisition Approval Workflow\",\n  \"description\": \"Standard approval process for IT requisitions\",\n  \"documentType\": \"requisition\",\n  \"isDefault\": false,\n  \"stages\": [\n    {\n      \"name\": \"Department Manager Review\",\n      \"description\": \"Initial review by department manager\",\n      \"order\": 1,\n      \"stageType\": \"approval\",\n      \"requiredRole\": \"manager\",\n      \"isParallel\": false,\n      \"isOptional\": false,\n      \"timeoutHours\": 48,\n      \"escalationRole\": \"org_admin\"\n    },\n    {\n      \"name\": \"Finance Review\",\n      \"description\": \"Financial review for amounts over $1000\",\n      \"order\": 2,\n      \"stageType\": \"approval\",\n      \"requiredRole\": \"finance_manager\",\n      \"isParallel\": false,\n      \"isOptional\": false,\n      \"timeoutHours\": 24,\n      \"conditions\": [\n        {\n          \"field\": \"totalAmount\",\n          \"operator\": \"greater_than\",\n          \"value\": \"1000\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows"]
+            },
+            "description": "Create a new workflow template"
+          }
+        },
+        {
+          "name": "Activate Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/{{workflow_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows", "{{workflow_id}}", "activate"]
+            },
+            "description": "Activate a workflow template"
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Approvals",
+      "description": "Approval task management and bulk operations",
+      "item": [
+        {
+          "name": "Get Approval Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/approvals?page=1&limit=20&status=pending&assignedTo=current",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "approvals"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "key": "assignedTo",
+                  "value": "current"
+                }
+              ]
+            },
+            "description": "Get approval tasks assigned to current user"
+          }
+        },
+        {
+          "name": "Approve Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"Approved with conditions\",\n  \"conditions\": \"Must be delivered by end of month\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/approvals/{{approval_id}}/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "approvals", "{{approval_id}}", "approve"]
+            },
+            "description": "Approve an approval task"
+          }
+        },
+        {
+          "name": "Bulk Approve",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approvalIds\": [\n    \"approval-id-1\",\n    \"approval-id-2\",\n    \"approval-id-3\"\n  ],\n  \"comment\": \"Bulk approval for Q1 requisitions\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/approvals/bulk/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "approvals", "bulk", "approve"]
+            },
+            "description": "Bulk approve multiple approval tasks"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Analytics",
+      "description": "Analytics and reporting endpoints",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "dashboard"]
+            },
+            "description": "Get dashboard analytics overview"
+          }
+        },
+        {
+          "name": "Get Requisition Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/requisitions/metrics?period=month&startDate=2024-01-01&endDate=2024-01-31&department=IT",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "requisitions", "metrics"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "month"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-01-31"
+                },
+                {
+                  "key": "department",
+                  "value": "IT"
+                }
+              ]
+            },
+            "description": "Get requisition analytics and metrics"
+          }
+        },
+        {
+          "name": "Get Approval Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/approvals/metrics?period=week",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "approvals", "metrics"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "week"
+                }
+              ]
+            },
+            "description": "Get approval analytics and metrics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔔 Notifications",
+      "description": "Notification management endpoints",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications?page=1&limit=20&unread=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "unread",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get user notifications"
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/{{notification_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "{{notification_id}}", "read"]
+            },
+            "description": "Mark a notification as read"
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/read-all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "read-all"]
+            },
+            "description": "Mark all notifications as read"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Health & Monitoring",
+      "description": "System health and monitoring endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Basic health check endpoint"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Base URL for the API"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT access token"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT refresh token"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string",
+      "description": "Current user ID"
+    },
+    {
+      "key": "organization_id",
+      "value": "",
+      "type": "string",
+      "description": "Current organization ID"
+    },
+    {
+      "key": "requisition_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample requisition ID"
+    },
+    {
+      "key": "budget_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample budget ID"
+    },
+    {
+      "key": "purchase_order_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample purchase order ID"
+    },
+    {
+      "key": "document_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample document ID"
+    },
+    {
+      "key": "document_number",
+      "value": "",
+      "type": "string",
+      "description": "Sample document number"
+    },
+    {
+      "key": "workflow_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample workflow ID"
+    },
+    {
+      "key": "approval_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample approval ID"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample category ID"
+    },
+    {
+      "key": "vendor_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample vendor ID"
+    },
+    {
+      "key": "role_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample role ID"
+    },
+    {
+      "key": "permission_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample permission ID"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string",
+      "description": "Sample notification ID"
+    }
+  ]
+}

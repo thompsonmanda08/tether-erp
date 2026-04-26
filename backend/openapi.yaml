@@ -1,0 +1,4315 @@
+openapi: 3.0.0
+info:
+  title: Tether-ERP Procurement API
+  description: |
+    Comprehensive REST API for procurement management system with approval workflows,
+    budget constraints, document linking, and multi-stage approval chains.
+  version: 1.0.0
+  contact:
+    name: Tether-ERP Support
+    email: support@tether-erp.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development Server
+  - url: https://api.tether-erp.com/api/v1
+    description: Production Server
+
+tags:
+  - name: Health
+    description: System health and status endpoints
+  - name: Authentication
+    description: User authentication, registration, and session management
+  - name: Organizations
+    description: Organization management and switching
+  - name: Organization Members
+    description: Organization member and user management
+  - name: Departments
+    description: Department management within organizations
+  - name: Roles
+    description: Organization role and permission management
+  - name: User Permissions
+    description: Individual user permission management
+  - name: Requisitions
+    description: Purchase requisition management
+  - name: Budgets
+    description: Budget allocation and management
+  - name: Purchase Orders
+    description: Purchase order creation and tracking
+  - name: GRN
+    description: Goods Received Notes management
+  - name: Payment Vouchers
+    description: Payment voucher management
+  - name: Categories
+    description: Category and budget code management
+  - name: Vendors
+    description: Vendor master data management
+  - name: Approvals
+    description: Approval workflow and task management
+  - name: Documents
+    description: Generic document management system
+  - name: Workflows
+    description: Workflow configuration and management
+  - name: Analytics
+    description: Dashboard and metrics analytics
+  - name: Notifications
+    description: User notification management
+  - name: Audit Logs
+    description: System audit trail and logging
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns the health status of the API server
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  message:
+                    type: string
+                    example: Tether-ERP Backend API is running
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticates user with email and password, returns JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@company.com
+                password:
+                  type: string
+                  format: password
+                  example: securepassword123
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      user:
+                        $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        "201":
+          description: Registration successful
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /auth/verify:
+    post:
+      tags:
+        - Authentication
+      summary: Verify email
+      description: Verify user email with token
+      operationId: verifyEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+              properties:
+                token:
+                  type: string
+      responses:
+        "200":
+          description: Email verified successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh token
+      description: Refresh the JWT access token using refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        "200":
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/password-reset/request:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: Send password reset email to user
+      operationId: requestPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Password reset email sent
+
+  /auth/password-reset/confirm:
+    post:
+      tags:
+        - Authentication
+      summary: Confirm password reset
+      description: Reset password with token
+      operationId: confirmPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        "200":
+          description: Password reset successful
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /auth/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get user profile
+      description: Get the current authenticated user's profile
+      operationId: getProfile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Logout the current session
+      operationId: logout
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logged out successfully
+
+  /auth/logout-all:
+    post:
+      tags:
+        - Authentication
+      summary: Logout all sessions
+      description: Logout from all devices/sessions
+      operationId: logoutAll
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: All sessions logged out
+
+  /auth/change-password:
+    post:
+      tags:
+        - Authentication
+      summary: Change password
+      description: Change the current user's password
+      operationId: changePassword
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                  format: password
+                newPassword:
+                  type: string
+                  format: password
+      responses:
+        "200":
+          description: Password changed successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /organizations:
+    get:
+      tags:
+        - Organizations
+      summary: List user's organizations
+      description: Get all organizations the current user belongs to
+      operationId: getOrganizations
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of organizations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Organization"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags:
+        - Organizations
+      summary: Create organization
+      description: Create a new organization
+      operationId: createOrganization
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrganizationRequest"
+      responses:
+        "201":
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Organization"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /organizations/{id}:
+    put:
+      tags:
+        - Organizations
+      summary: Update organization
+      operationId: updateOrganization
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrganizationRequest"
+      responses:
+        "200":
+          description: Organization updated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Organizations
+      summary: Delete organization
+      operationId: deleteOrganization
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Organization deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organizations/{id}/switch:
+    post:
+      tags:
+        - Organizations
+      summary: Switch organization
+      description: Switch the current active organization context
+      operationId: switchOrganization
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Organization switched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: New JWT token with updated organization context
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/members:
+    get:
+      tags:
+        - Organization Members
+      summary: List organization members
+      operationId: getOrganizationMembers
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OrganizationMember"
+
+    post:
+      tags:
+        - Organization Members
+      summary: Add organization member
+      operationId: addOrganizationMember
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                role:
+                  type: string
+      responses:
+        "201":
+          description: Member added
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /organization/members/{userId}:
+    delete:
+      tags:
+        - Organization Members
+      summary: Remove organization member
+      operationId: removeOrganizationMember
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Member removed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/users:
+    get:
+      tags:
+        - Organization Members
+      summary: List organization users
+      description: Get all users in the organization with their details
+      operationId: getOrganizationUsers
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+
+    post:
+      tags:
+        - Organization Members
+      summary: Create organization user
+      description: Create a new user within the organization
+      operationId: createOrganizationUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+      responses:
+        "201":
+          description: User created
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /organization/settings:
+    get:
+      tags:
+        - Organization Members
+      summary: Get organization settings
+      operationId: getOrganizationSettings
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Organization settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+    put:
+      tags:
+        - Organization Members
+      summary: Update organization settings
+      operationId: updateOrganizationSettings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Settings updated
+
+  /organization/departments:
+    get:
+      tags:
+        - Departments
+      summary: List departments
+      operationId: getDepartments
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Department"
+
+    post:
+      tags:
+        - Departments
+      summary: Create department
+      operationId: createDepartment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepartmentRequest"
+      responses:
+        "201":
+          description: Department created
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /organization/departments/{id}:
+    get:
+      tags:
+        - Departments
+      summary: Get department by ID
+      operationId: getDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Department details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Department"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      tags:
+        - Departments
+      summary: Update department
+      operationId: updateDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDepartmentRequest"
+      responses:
+        "200":
+          description: Department updated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Departments
+      summary: Delete department
+      operationId: deleteDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Department deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/departments/{id}/restore:
+    post:
+      tags:
+        - Departments
+      summary: Restore deleted department
+      operationId: restoreDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Department restored
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/departments/{id}/modules:
+    get:
+      tags:
+        - Departments
+      summary: Get department modules
+      operationId: getDepartmentModules
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of modules
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      tags:
+        - Departments
+      summary: Add module to department
+      operationId: addDepartmentModule
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - moduleId
+              properties:
+                moduleId:
+                  type: string
+      responses:
+        "201":
+          description: Module added
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/departments/{departmentId}/modules/{moduleId}:
+    delete:
+      tags:
+        - Departments
+      summary: Remove module from department
+      operationId: removeDepartmentModule
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: departmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Module removed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/departments/{departmentId}/users:
+    get:
+      tags:
+        - Departments
+      summary: Get department users
+      operationId: getDepartmentUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: departmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of users in department
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{userId}/department/{departmentId}:
+    post:
+      tags:
+        - Departments
+      summary: Assign user to department
+      operationId: assignUserToDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: departmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User assigned to department
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{userId}/department:
+    get:
+      tags:
+        - Departments
+      summary: Get user's department
+      operationId: getUserDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User's department
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Departments
+      summary: Remove user from department
+      operationId: removeUserFromDepartment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User removed from department
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /permissions:
+    get:
+      tags:
+        - User Permissions
+      summary: Get all system permissions
+      description: List all available permissions in the system
+      operationId: getAllPermissions
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: string
+
+  /users/{userId}/permissions:
+    get:
+      tags:
+        - User Permissions
+      summary: Get user permissions
+      operationId: getUserPermissions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User's permissions
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{userId}/permissions/{resource}/{action}:
+    post:
+      tags:
+        - User Permissions
+      summary: Grant permission to user
+      operationId: grantUserPermission
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+          example: requisition
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+          example: approve
+      responses:
+        "200":
+          description: Permission granted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - User Permissions
+      summary: Revoke permission from user
+      operationId: revokeUserPermission
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Permission revoked
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /requisitions:
+    get:
+      tags:
+        - Requisitions
+      summary: List all requisitions
+      description: Retrieve paginated list of requisitions with optional filtering
+      operationId: getRequisitions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, pending, approved, rejected, fulfilled]
+        - name: department
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of requisitions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags:
+        - Requisitions
+      summary: Create new requisition
+      description: Create a new purchase requisition in draft status
+      operationId: createRequisition
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRequisitionRequest"
+      responses:
+        "201":
+          description: Requisition created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RequisitionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /requisitions/{id}:
+    get:
+      tags:
+        - Requisitions
+      summary: Get requisition by ID
+      description: Retrieve a single requisition with all details
+      operationId: getRequisition
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Requisition details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RequisitionResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    put:
+      tags:
+        - Requisitions
+      summary: Update requisition
+      description: Update a requisition (only draft status can be updated)
+      operationId: updateRequisition
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRequisitionRequest"
+      responses:
+        "200":
+          description: Requisition updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RequisitionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Requisitions
+      summary: Delete requisition
+      description: Delete a requisition (only draft status can be deleted)
+      operationId: deleteRequisition
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Requisition deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /requisitions/{id}/submit:
+    post:
+      tags:
+        - Requisitions
+      summary: Submit requisition for approval
+      description: Move requisition from draft to pending status for approval
+      operationId: submitRequisition
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comments:
+                  type: string
+                  example: Ready for approval
+      responses:
+        "200":
+          description: Requisition submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RequisitionResponse"
+
+  /budgets:
+    get:
+      tags:
+        - Budgets
+      summary: List all budgets
+      description: Retrieve paginated list of budgets with filtering
+      operationId: getBudgets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, pending, approved, rejected]
+        - name: fiscalYear
+          in: query
+          schema:
+            type: string
+            example: "2025"
+      responses:
+        "200":
+          description: List of budgets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags:
+        - Budgets
+      summary: Create new budget
+      description: Create a new departmental budget
+      operationId: createBudget
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBudgetRequest"
+      responses:
+        "201":
+          description: Budget created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/BudgetResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Budget already exists for this department/fiscal year
+
+  /budgets/{id}:
+    get:
+      tags:
+        - Budgets
+      summary: Get budget by ID
+      operationId: getBudget
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Budget details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/BudgetResponse"
+
+    put:
+      tags:
+        - Budgets
+      summary: Update budget
+      operationId: updateBudget
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBudgetRequest"
+      responses:
+        "200":
+          description: Budget updated
+
+  /purchase-orders:
+    get:
+      tags:
+        - Purchase Orders
+      summary: List all purchase orders
+      operationId: getPurchaseOrders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, pending, approved, rejected, fulfilled]
+      responses:
+        "200":
+          description: List of purchase orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
+    post:
+      tags:
+        - Purchase Orders
+      summary: Create new purchase order
+      operationId: createPurchaseOrder
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePurchaseOrderRequest"
+      responses:
+        "201":
+          description: Purchase order created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/PurchaseOrderResponse"
+
+  /purchase-orders/{id}:
+    get:
+      tags:
+        - Purchase Orders
+      summary: Get purchase order by ID
+      operationId: getPurchaseOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Purchase order details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/PurchaseOrderResponse"
+
+    put:
+      tags:
+        - Purchase Orders
+      summary: Update purchase order
+      operationId: updatePurchaseOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePurchaseOrderRequest"
+      responses:
+        "200":
+          description: Purchase order updated
+
+  /purchase-orders/{id}/approve:
+    post:
+      tags:
+        - Purchase Orders
+      summary: Approve purchase order
+      operationId: approvePurchaseOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveDocumentRequest"
+      responses:
+        "200":
+          description: Purchase order approved
+
+  /grn:
+    get:
+      tags:
+        - GRN
+      summary: List all goods received notes
+      operationId: getGRNs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: poNumber
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of GRNs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
+    post:
+      tags:
+        - GRN
+      summary: Create new GRN
+      operationId: createGRN
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGRNRequest"
+      responses:
+        "201":
+          description: GRN created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/GRNResponse"
+
+  /grn/{id}:
+    get:
+      tags:
+        - GRN
+      summary: Get GRN by ID
+      operationId: getGRN
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: GRN details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/GRNResponse"
+
+  /payment-vouchers:
+    get:
+      tags:
+        - Payment Vouchers
+      summary: List all payment vouchers
+      operationId: getPaymentVouchers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of payment vouchers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
+    post:
+      tags:
+        - Payment Vouchers
+      summary: Create new payment voucher
+      operationId: createPaymentVoucher
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentVoucherRequest"
+      responses:
+        "201":
+          description: Payment voucher created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/PaymentVoucherResponse"
+
+  /vendors:
+    get:
+      tags:
+        - Vendors
+      summary: List all vendors
+      operationId: getVendors
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: country
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of vendors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
+    post:
+      tags:
+        - Vendors
+      summary: Create new vendor
+      operationId: createVendor
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVendorRequest"
+      responses:
+        "201":
+          description: Vendor created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/VendorResponse"
+
+  /vendors/{id}:
+    get:
+      tags:
+        - Vendors
+      summary: Get vendor by ID
+      operationId: getVendor
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Vendor details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/VendorResponse"
+
+    put:
+      tags:
+        - Vendors
+      summary: Update vendor
+      operationId: updateVendor
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVendorRequest"
+      responses:
+        "200":
+          description: Vendor updated
+
+  /organization/roles:
+    get:
+      tags:
+        - Roles
+      summary: List all organization roles
+      description: |
+        Retrieve all roles for the current organization. If no roles exist,
+        default system roles (admin, approver, requester, finance, viewer)
+        will be automatically initialized.
+      operationId: getOrganizationRoles
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of organization roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RoleResponse"
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags:
+        - Roles
+      summary: Create new organization role
+      description: Create a new custom role for the organization
+      operationId: createOrganizationRole
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoleRequest"
+      responses:
+        "201":
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RoleResponse"
+                  message:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /organization/roles/init:
+    post:
+      tags:
+        - Roles
+      summary: Initialize default roles
+      description: |
+        Initialize default system roles for the organization.
+        Creates admin, approver, requester, finance, and viewer roles with predefined permissions.
+        Skips roles that already exist.
+      operationId: initializeDefaultRoles
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Default roles initialized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /organization/roles/{roleId}:
+    put:
+      tags:
+        - Roles
+      summary: Update organization role
+      description: |
+        Update an existing role's name and description.
+        System roles (isDefault=true) cannot be modified.
+      operationId: updateOrganizationRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoleRequest"
+      responses:
+        "200":
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RoleResponse"
+                  message:
+                    type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Roles
+      summary: Delete organization role
+      description: |
+        Delete a custom role. System default roles (admin, approver, requester,
+        finance, viewer) cannot be deleted.
+      operationId: deleteOrganizationRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Role deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "400":
+          description: Cannot delete system roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Cannot delete system default roles
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/roles/{roleId}/permissions:
+    get:
+      tags:
+        - Roles
+      summary: Get role permissions
+      description: Retrieve all permissions assigned to a specific role
+      operationId: getRolePermissions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of permission strings assigned to the role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - "requisition:view"
+                      - "requisition:create"
+                      - "budget:view"
+                  message:
+                    type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/roles/{roleId}/permissions/{permissionId}:
+    post:
+      tags:
+        - Roles
+      summary: Assign permission to role
+      description: Add a permission to the specified role
+      operationId: assignPermissionToRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: permissionId
+          in: path
+          required: true
+          description: Permission name (e.g., "requisition:view")
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Permission assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Roles
+      summary: Remove permission from role
+      description: Remove a permission from the specified role
+      operationId: removePermissionFromRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: permissionId
+          in: path
+          required: true
+          description: Permission name (e.g., "requisition:view")
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Permission removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /organization/permissions:
+    get:
+      tags:
+        - Roles
+      summary: Get available permissions
+      description: |
+        Retrieve all available permissions that can be assigned to roles.
+        Permissions follow the format "resource:action" (e.g., "requisition:view").
+      operationId: getOrganizationPermissions
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of all available permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - "requisition:view"
+                      - "requisition:create"
+                      - "requisition:edit"
+                      - "requisition:delete"
+                      - "requisition:approve"
+                      - "requisition:reject"
+                      - "budget:view"
+                      - "budget:create"
+                      - "budget:edit"
+                      - "budget:delete"
+                      - "budget:approve"
+                      - "budget:reject"
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /categories/{id}/budget-codes:
+    get:
+      tags:
+        - Categories
+      summary: Get category budget codes
+      operationId: getCategoryBudgetCodes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of budget codes
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      tags:
+        - Categories
+      summary: Add budget code to category
+      operationId: addCategoryBudgetCode
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budgetCode
+              properties:
+                budgetCode:
+                  type: string
+      responses:
+        "201":
+          description: Budget code added
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /categories/{id}/budget-codes/{budgetCode}:
+    delete:
+      tags:
+        - Categories
+      summary: Remove budget code from category
+      operationId: removeCategoryBudgetCode
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: budgetCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Budget code removed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals:
+    get:
+      tags:
+        - Approvals
+      summary: List approval tasks
+      description: Get all pending approval tasks for the current user
+      operationId: getApprovals
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+        - name: documentType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of approval tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApprovalTask"
+
+  /approvals/stats:
+    get:
+      tags:
+        - Approvals
+      summary: Get approval statistics
+      operationId: getApprovalStats
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Approval statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      pending:
+                        type: integer
+                      approved:
+                        type: integer
+                      rejected:
+                        type: integer
+
+  /approvals/available-approvers:
+    get:
+      tags:
+        - Approvals
+      summary: Get available approvers
+      description: List users who can approve documents
+      operationId: getAvailableApprovers
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of approvers
+
+  /approvals/tasks/overdue:
+    get:
+      tags:
+        - Approvals
+      summary: Get overdue approval tasks
+      operationId: getOverdueApprovalTasks
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of overdue tasks
+
+  /approvals/{id}:
+    get:
+      tags:
+        - Approvals
+      summary: Get approval task by ID
+      operationId: getApproval
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Approval task details
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals/{id}/approve:
+    post:
+      tags:
+        - Approvals
+      summary: Approve document
+      operationId: approveDocument
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveDocumentRequest"
+      responses:
+        "200":
+          description: Document approved
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals/{id}/reject:
+    post:
+      tags:
+        - Approvals
+      summary: Reject document
+      operationId: rejectDocument
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                comments:
+                  type: string
+      responses:
+        "200":
+          description: Document rejected
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals/{id}/reassign:
+    post:
+      tags:
+        - Approvals
+      summary: Reassign approval task
+      operationId: reassignApproval
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newApproverId
+              properties:
+                newApproverId:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Task reassigned
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals/tasks/{id}/claim:
+    post:
+      tags:
+        - Approvals
+      summary: Claim approval task
+      operationId: claimApprovalTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Task claimed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals/tasks/{id}/unclaim:
+    post:
+      tags:
+        - Approvals
+      summary: Unclaim approval task
+      operationId: unclaimApprovalTask
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Task unclaimed
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /approvals/bulk/approve:
+    post:
+      tags:
+        - Approvals
+      summary: Bulk approve documents
+      operationId: bulkApprove
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                comments:
+                  type: string
+      responses:
+        "200":
+          description: Documents approved
+
+  /approvals/bulk/reject:
+    post:
+      tags:
+        - Approvals
+      summary: Bulk reject documents
+      operationId: bulkReject
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+                - reason
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Documents rejected
+
+  /approvals/bulk/reassign:
+    post:
+      tags:
+        - Approvals
+      summary: Bulk reassign approval tasks
+      operationId: bulkReassign
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+                - newApproverId
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                newApproverId:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Tasks reassigned
+
+  /documents/{documentId}/approval-history:
+    get:
+      tags:
+        - Documents
+      summary: Get document approval history
+      operationId: getDocumentApprovalHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Approval history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApprovalRecord"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /documents/{documentId}/approval-status:
+    get:
+      tags:
+        - Documents
+      summary: Get document approval status
+      operationId: getDocumentApprovalStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Approval status
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /documents:
+    get:
+      tags:
+        - Documents
+      summary: List all documents
+      operationId: getDocuments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+
+    post:
+      tags:
+        - Documents
+      summary: Create document
+      operationId: createDocument
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+              properties:
+                type:
+                  type: string
+                data:
+                  type: object
+      responses:
+        "201":
+          description: Document created
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /documents/my:
+    get:
+      tags:
+        - Documents
+      summary: Get my documents
+      description: Get documents created by the current user
+      operationId: getMyDocuments
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of user's documents
+
+  /documents/search:
+    get:
+      tags:
+        - Documents
+      summary: Search documents
+      operationId: searchDocuments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+
+  /documents/stats:
+    get:
+      tags:
+        - Documents
+      summary: Get document statistics
+      operationId: getDocumentStats
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Document statistics
+
+  /documents/{id}:
+    get:
+      tags:
+        - Documents
+      summary: Get document by ID
+      operationId: getDocument
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Document details
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      tags:
+        - Documents
+      summary: Update document
+      operationId: updateDocument
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Document updated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Documents
+      summary: Delete document
+      operationId: deleteDocument
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Document deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /documents/{id}/submit:
+    post:
+      tags:
+        - Documents
+      summary: Submit document for approval
+      operationId: submitDocument
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Document submitted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /documents/number/{number}:
+    get:
+      tags:
+        - Documents
+      summary: Get document by number
+      operationId: getDocumentByNumber
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Document details
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows:
+    get:
+      tags:
+        - Workflows
+      summary: List workflows
+      operationId: getWorkflows
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Workflow"
+
+    post:
+      tags:
+        - Workflows
+      summary: Create workflow
+      operationId: createWorkflow
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkflowRequest"
+      responses:
+        "201":
+          description: Workflow created
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /workflows/{id}:
+    get:
+      tags:
+        - Workflows
+      summary: Get workflow by ID
+      operationId: getWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Workflow details
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      tags:
+        - Workflows
+      summary: Update workflow
+      operationId: updateWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorkflowRequest"
+      responses:
+        "200":
+          description: Workflow updated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - Workflows
+      summary: Delete workflow
+      operationId: deleteWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Workflow deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/default/{documentType}:
+    get:
+      tags:
+        - Workflows
+      summary: Get default workflow for document type
+      operationId: getDefaultWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: documentType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Default workflow
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/{id}/activate:
+    post:
+      tags:
+        - Workflows
+      summary: Activate workflow
+      operationId: activateWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Workflow activated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/{id}/deactivate:
+    post:
+      tags:
+        - Workflows
+      summary: Deactivate workflow
+      operationId: deactivateWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Workflow deactivated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/{id}/duplicate:
+    post:
+      tags:
+        - Workflows
+      summary: Duplicate workflow
+      operationId: duplicateWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "201":
+          description: Workflow duplicated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/{id}/set-default:
+    post:
+      tags:
+        - Workflows
+      summary: Set workflow as default
+      operationId: setDefaultWorkflow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Workflow set as default
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/{id}/usage:
+    get:
+      tags:
+        - Workflows
+      summary: Get workflow usage statistics
+      operationId: getWorkflowUsage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Workflow usage stats
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /workflows/resolve:
+    post:
+      tags:
+        - Workflows
+      summary: Resolve workflow for document
+      description: Determine which workflow applies to a given document
+      operationId: resolveWorkflow
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - documentType
+              properties:
+                documentType:
+                  type: string
+                amount:
+                  type: number
+                department:
+                  type: string
+      responses:
+        "200":
+          description: Resolved workflow
+
+  /workflows/validate:
+    post:
+      tags:
+        - Workflows
+      summary: Validate workflow configuration
+      operationId: validateWorkflow
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkflowRequest"
+      responses:
+        "200":
+          description: Validation result
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get dashboard analytics
+      operationId: getDashboardAnalytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month, quarter, year]
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/DashboardAnalytics"
+
+  /analytics/requisitions/metrics:
+    get:
+      tags:
+        - Analytics
+      summary: Get requisition metrics
+      operationId: getRequisitionMetrics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Requisition metrics
+
+  /analytics/approvals/metrics:
+    get:
+      tags:
+        - Analytics
+      summary: Get approval metrics
+      operationId: getApprovalMetrics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Approval metrics
+
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: List notifications
+      operationId: getNotifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Notification"
+
+  /notifications/recent:
+    get:
+      tags:
+        - Notifications
+      summary: Get recent notifications
+      operationId: getRecentNotifications
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Recent notifications
+
+  /notifications/stats:
+    get:
+      tags:
+        - Notifications
+      summary: Get notification statistics
+      operationId: getNotificationStats
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Notification stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      unread:
+                        type: integer
+                      total:
+                        type: integer
+
+  /notifications/mark-as-read:
+    post:
+      tags:
+        - Notifications
+      summary: Mark notifications as read
+      operationId: markNotificationsAsRead
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Notifications marked as read
+
+  /notifications/mark-all-as-read:
+    post:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      operationId: markAllNotificationsAsRead
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: All notifications marked as read
+
+  /notifications/{id}:
+    delete:
+      tags:
+        - Notifications
+      summary: Delete notification
+      operationId: deleteNotification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Notification deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /audit-logs:
+    get:
+      tags:
+        - Audit Logs
+      summary: List audit logs
+      operationId: getAuditLogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: resource
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AuditLog"
+
+  /audit-logs/document/{documentId}:
+    get:
+      tags:
+        - Audit Logs
+      summary: Get audit logs for document
+      operationId: getDocumentAuditLogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Document audit logs
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login endpoint
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, approver, user]
+        department:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    CreateRequisitionRequest:
+      type: object
+      required:
+        - department
+        - totalAmount
+        - currency
+        - deliveryDate
+      properties:
+        department:
+          type: string
+        totalAmount:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+        currency:
+          type: string
+          example: USD
+        deliveryDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              quantity:
+                type: number
+              unitPrice:
+                type: number
+              amount:
+                type: number
+
+    UpdateRequisitionRequest:
+      type: object
+      properties:
+        department:
+          type: string
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        deliveryDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+
+    RequisitionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reqNumber:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        department:
+          type: string
+        status:
+          type: string
+          enum: [draft, pending, approved, rejected, fulfilled]
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        deliveryDate:
+          type: string
+          format: date-time
+        approvalStage:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateBudgetRequest:
+      type: object
+      required:
+        - budgetCode
+        - department
+        - fiscalYear
+        - totalBudget
+      properties:
+        budgetCode:
+          type: string
+        department:
+          type: string
+        fiscalYear:
+          type: string
+          pattern: '^\d{4}$'
+        totalBudget:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+        allocatedAmount:
+          type: number
+          default: 0
+
+    UpdateBudgetRequest:
+      type: object
+      properties:
+        totalBudget:
+          type: number
+        allocatedAmount:
+          type: number
+
+    BudgetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        budgetCode:
+          type: string
+        department:
+          type: string
+        fiscalYear:
+          type: string
+        status:
+          type: string
+          enum: [draft, pending, approved, rejected]
+        totalBudget:
+          type: number
+        allocatedAmount:
+          type: number
+        remainingAmount:
+          type: number
+        approvalStage:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreatePurchaseOrderRequest:
+      type: object
+      required:
+        - vendorId
+        - totalAmount
+        - currency
+        - deliveryDate
+      properties:
+        vendorId:
+          type: string
+          format: uuid
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        deliveryDate:
+          type: string
+          format: date-time
+        linkedRequisition:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            type: object
+
+    UpdatePurchaseOrderRequest:
+      type: object
+      properties:
+        vendorId:
+          type: string
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        deliveryDate:
+          type: string
+
+    PurchaseOrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        poNumber:
+          type: string
+        vendorId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        totalAmount:
+          type: number
+        currency:
+          type: string
+        deliveryDate:
+          type: string
+          format: date-time
+        linkedRequisition:
+          type: string
+          format: uuid
+        approvalStage:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateGRNRequest:
+      type: object
+      required:
+        - poNumber
+        - receivedBy
+        - items
+      properties:
+        poNumber:
+          type: string
+        receivedBy:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            properties:
+              itemNo:
+                type: integer
+              description:
+                type: string
+              quantity:
+                type: number
+              receivedQty:
+                type: number
+
+    GRNResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        grnNumber:
+          type: string
+        poNumber:
+          type: string
+        status:
+          type: string
+        receivedDate:
+          type: string
+          format: date-time
+        receivedBy:
+          type: string
+        items:
+          type: array
+        qualityIssues:
+          type: array
+        approvalStage:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    CreatePaymentVoucherRequest:
+      type: object
+      required:
+        - vendorId
+        - invoiceNumber
+        - amount
+        - currency
+        - description
+      properties:
+        vendorId:
+          type: string
+          format: uuid
+        invoiceNumber:
+          type: string
+        amount:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+        currency:
+          type: string
+        paymentMethod:
+          type: string
+          enum: [bank_transfer, check, cash, credit_card, wire]
+        glCode:
+          type: string
+        description:
+          type: string
+          minLength: 10
+        linkedPO:
+          type: string
+          format: uuid
+
+    PaymentVoucherResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        voucherNumber:
+          type: string
+        vendorId:
+          type: string
+          format: uuid
+        invoiceNumber:
+          type: string
+        status:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        paymentMethod:
+          type: string
+        glCode:
+          type: string
+        approvalStage:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateVendorRequest:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - country
+        - city
+        - bankAccount
+        - taxID
+      properties:
+        name:
+          type: string
+          minLength: 3
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        bankAccount:
+          type: string
+          minLength: 8
+        taxID:
+          type: string
+
+    UpdateVendorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        bankAccount:
+          type: string
+        taxID:
+          type: string
+
+    VendorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vendorCode:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        bankAccount:
+          type: string
+        taxID:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ApproveDocumentRequest:
+      type: object
+      required:
+        - signature
+      properties:
+        comments:
+          type: string
+        signature:
+          type: string
+
+    ApprovalRecord:
+      type: object
+      properties:
+        approverId:
+          type: string
+          format: uuid
+        approverName:
+          type: string
+        status:
+          type: string
+          enum: [approved, rejected, pending]
+        comments:
+          type: string
+        signature:
+          type: string
+        approvedAt:
+          type: string
+          format: date-time
+
+    CreateRoleRequest:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          minLength: 3
+          description: Role name (e.g., "Chief Finance Officer", "Auditor")
+          example: "Department Manager"
+        description:
+          type: string
+          minLength: 10
+          description: Detailed description of the role's responsibilities
+          example: "Manages department operations and approves requisitions"
+
+    UpdateRoleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          description: Updated role name
+          example: "Senior Department Manager"
+        description:
+          type: string
+          minLength: 10
+          description: Updated role description
+          example: "Manages department operations with elevated approval authority"
+
+    RoleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique role identifier
+        name:
+          type: string
+          description: Role name
+          example: "admin"
+        description:
+          type: string
+          description: Role description
+          example: "Full administrative access"
+        isDefault:
+          type: boolean
+          description: Whether this is a system default role (cannot be modified or deleted)
+          example: true
+        isActive:
+          type: boolean
+          description: Whether the role is currently active
+          example: true
+        permissionsCount:
+          type: integer
+          description: Number of permissions assigned to this role
+          example: 26
+        createdAt:
+          type: string
+          format: date-time
+          description: Role creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Role last update timestamp
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateOrganizationRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 3
+        description:
+          type: string
+        logo:
+          type: string
+
+    UpdateOrganizationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        logo:
+          type: string
+
+    OrganizationMember:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        organizationId:
+          type: string
+          format: uuid
+        role:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        joinedAt:
+          type: string
+          format: date-time
+
+    Department:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+        managerId:
+          type: string
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateDepartmentRequest:
+      type: object
+      required:
+        - name
+        - code
+      properties:
+        name:
+          type: string
+          minLength: 3
+        code:
+          type: string
+        description:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+        managerId:
+          type: string
+
+    UpdateDepartmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+        managerId:
+          type: string
+
+    ApprovalTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        documentId:
+          type: string
+          format: uuid
+        documentType:
+          type: string
+        documentNumber:
+          type: string
+        stage:
+          type: integer
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        assignedTo:
+          type: string
+        claimedBy:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Workflow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        documentType:
+          type: string
+        entityType:
+          type: string
+        version:
+          type: integer
+        isActive:
+          type: boolean
+        isDefault:
+          type: boolean
+        conditions:
+          type: object
+        stages:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowStage"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WorkflowStage:
+      type: object
+      properties:
+        order:
+          type: integer
+        name:
+          type: string
+        approverType:
+          type: string
+          enum: [user, role, department_head, any]
+        approverIds:
+          type: array
+          items:
+            type: string
+        requiredApprovals:
+          type: integer
+        canReassign:
+          type: boolean
+        autoApprove:
+          type: boolean
+        slaHours:
+          type: integer
+
+    CreateWorkflowRequest:
+      type: object
+      required:
+        - name
+        - documentType
+        - stages
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        documentType:
+          type: string
+        conditions:
+          type: object
+        stages:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowStage"
+
+    UpdateWorkflowRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        conditions:
+          type: object
+        stages:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkflowStage"
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        data:
+          type: object
+        read:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+        action:
+          type: string
+        resource:
+          type: string
+        resourceId:
+          type: string
+        oldValues:
+          type: object
+        newValues:
+          type: object
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    DashboardAnalytics:
+      type: object
+      properties:
+        totalRequisitions:
+          type: integer
+        pendingApprovals:
+          type: integer
+        approvedThisMonth:
+          type: integer
+        rejectedThisMonth:
+          type: integer
+        totalBudget:
+          type: number
+        usedBudget:
+          type: number
+        averageApprovalTime:
+          type: number
+        topCategories:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+              count:
+                type: integer
+              amount:
+                type: number
+        monthlyTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              requisitions:
+                type: integer
+              amount:
+                type: number
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Invalid request body
+
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Unauthorized
+
+    Forbidden:
+      description: Operation not allowed for current user
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Forbidden
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Resource not found

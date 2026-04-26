@@ -1,0 +1,110 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tether-erp-postgres
+    environment:
+      POSTGRES_USER: tether_erp
+      POSTGRES_PASSWORD: tether_erp_dev_password
+      POSTGRES_DB: tether_erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tether_erp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tether-erp-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tether-erp-backend
+    environment:
+      - DATABASE_URL=postgresql://tether_erp:tether_erp_dev_password@postgres:5432/tether_erp?sslmode=disable
+      - JWT_SECRET=dev_jwt_secret_change_in_production
+      - ENCRYPTION_KEY=dev_encryption_key_change_in_production
+      - ENV=development
+      - PORT=8080
+      - LOG_LEVEL=debug
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - tether-erp-network
+    restart: unless-stopped
+
+  # Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: tether-erp-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3000
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - tether-erp-network
+    restart: unless-stopped
+
+  # Admin Console (Development)
+  admin-console:
+    build:
+      context: ./admin-console
+      dockerfile: Dockerfile
+    container_name: tether-erp-admin-console
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+      - NODE_ENV=development
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    volumes:
+      - ./admin-console:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - tether-erp-network
+    restart: unless-stopped
+
+  # Redis (Optional - for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: tether-erp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tether-erp-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tether-erp-network:
+    driver: bridge

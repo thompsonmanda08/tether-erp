@@ -1,0 +1,281 @@
+# LIYALI GATEWAY COMPREHENSIVE HTTP TEST REQUESTS
+# Use with REST Client extension in VS Code or similar HTTP client
+# Updated Jan 12, 2026 - 100% Route Coverage
+
+@baseUrl = http://localhost:8080
+@apiUrl = {{baseUrl}}/api/v1
+
+### Variables (update these with actual values from responses)
+@accessToken = 
+@refreshToken = 
+@organizationId = 
+@userId = 
+@vendorId = 
+@workflowId = 
+@requisitionId = 
+@budgetId = 
+@categoryId = 
+@testOrgId = 
+
+###############################################################################
+# 1. HEALTH CHECK & SYSTEM STATUS
+###############################################################################
+
+### Health Check
+GET {{baseUrl}}/health
+
+###############################################################################
+# 2. AUTHENTICATION & SESSION MANAGEMENT
+###############################################################################
+
+### Login User (Standard Admin)
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@liyali.com",
+  "password": "password"
+}
+
+### Verify Token
+POST {{apiUrl}}/auth/verify
+Content-Type: application/json
+
+{
+  "token": "{{accessToken}}"
+}
+
+### Refresh Token (with Rotation)
+POST {{apiUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Get User Profile (Checks Security/Privacy)
+GET {{apiUrl}}/auth/profile
+Authorization: Bearer {{accessToken}}
+
+### Change Password
+POST {{apiUrl}}/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "password",
+  "newPassword": "password"
+}
+
+### User Registration
+POST {{apiUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "password",
+  "name": "New User",
+  "role": "requester",
+  "organizationName": "New Company"
+}
+
+### Request Password Reset
+POST {{apiUrl}}/auth/password-reset/request
+Content-Type: application/json
+
+{
+  "email": "admin@liyali.com"
+}
+
+### Logout Current Session
+POST {{apiUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Logout All Sessions
+POST {{apiUrl}}/auth/logout-all
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+# 3. ORGANIZATION & MEMBER MANAGEMENT
+###############################################################################
+
+### Get User Organizations
+GET {{apiUrl}}/organizations
+Authorization: Bearer {{accessToken}}
+
+### Create New Organization
+POST {{apiUrl}}/organizations
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Manual Test Org",
+  "taxId": "TAX-123",
+  "address": "456 Test Blvd",
+  "city": "Debug City",
+  "country": "Testerland"
+}
+
+### Switch Organization Context
+POST {{apiUrl}}/organizations/{{testOrgId}}/switch
+Authorization: Bearer {{accessToken}}
+
+### Get Organization Members
+GET {{apiUrl}}/organization/members
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Add Member to Organization
+POST {{apiUrl}}/organization/members
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+Content-Type: application/json
+
+{
+  "userId": "user-test-002",
+  "roleName": "requester"
+}
+
+###############################################################################
+# 4. DOCUMENT MANAGEMENT
+###############################################################################
+
+### Get Categories
+GET {{apiUrl}}/categories
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Create Category
+POST {{apiUrl}}/categories
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+Content-Type: application/json
+
+{
+  "name": "Manual Equipment",
+  "description": "Manually created category",
+  "code": "MANUAL-EQ"
+}
+
+### Get Vendors
+GET {{apiUrl}}/vendors
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Create Requisition
+POST {{apiUrl}}/requisitions
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+Content-Type: application/json
+
+{
+  "title": "Manual Requisition",
+  "description": "Created for manual verify",
+  "priority": "medium",
+  "items": [{
+    "description": "Test Goods",
+    "quantity": 5,
+    "unitPrice": 20.00,
+    "totalPrice": 100.00
+  }],
+  "totalAmount": 100.00,
+  "currency": "USD"
+}
+
+### Document Search
+GET {{apiUrl}}/documents?q=Manual
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Document Stats
+GET {{apiUrl}}/documents/stats
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+###############################################################################
+# 5. WORKFLOW & APPROVAL SYSTEM
+###############################################################################
+
+### Get Workflows
+GET {{apiUrl}}/workflows
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Resolve Workflow for Requisition
+POST {{apiUrl}}/workflows/resolve
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+Content-Type: application/json
+
+{
+  "entityType": "requisition",
+  "conditions": {
+    "amount": 500.00,
+    "department": "IT"
+  }
+}
+
+### Get Available Approvers
+GET {{apiUrl}}/approvals/available-approvers?documentType=requisition
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Get Approval Metrics
+GET {{apiUrl}}/analytics/approvals/metrics
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+###############################################################################
+# 6. ANALYTICS & NOTIFICATIONS
+###############################################################################
+
+### Dashboard Analytics
+GET {{apiUrl}}/analytics/dashboard
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Get Notifications
+GET {{apiUrl}}/notifications
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+### Get Notification Stats
+GET {{apiUrl}}/notifications/stats
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+
+###############################################################################
+# 7. ERROR & VALIDATION TESTING (Negative Scenarios)
+###############################################################################
+
+### Invalid Login (Wrong Credentials)
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@liyali.com",
+  "password": "wrongpassword"
+}
+
+### Access without Token (401)
+GET {{apiUrl}}/auth/profile
+
+### Unauthorized Org Access (403)
+GET {{apiUrl}}/categories
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: unauthorized-org-id
+
+### Malformed JSON (400)
+POST {{apiUrl}}/categories
+Authorization: Bearer {{accessToken}}
+X-Organization-ID: {{organizationId}}
+Content-Type: application/json
+
+{
+  "name": "Broken JSON",,
+}

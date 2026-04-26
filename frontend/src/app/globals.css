@@ -1,0 +1,762 @@
+/**
+ * Tickety Design System - Complete Theme for Tailwind V4
+ * Location: apps/web/src/app/globals.css
+ */
+
+/* ========================================
+   TAILWIND V4 IMPORTS
+   ======================================== */
+@import "tailwindcss";
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
+@import "tailwindcss/utilities" layer(utilities);
+@import "tw-animate-css";
+@plugin './hero.ts';
+@source '../**/*.{js,ts,jsx,tsx}';
+@source '../../../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+/* ========================================
+   CSS VARIABLE MAPPINGS
+   Maps Tailwind utilities to HeroUI theme (hero.ts is source of truth)
+   ======================================== */
+:root {
+  /* Map Tailwind color utilities to HeroUI variables */
+  --background: var(--heroui-background);
+  --foreground: var(--heroui-foreground);
+  --card: var(--heroui-content1);
+  --card-foreground: var(--heroui-foreground);
+  --popover: var(--heroui-content1);
+  --popover-foreground: var(--heroui-foreground);
+  --primary: var(--heroui-primary);
+  --primary-foreground: var(--heroui-primary-foreground);
+  --secondary: var(--heroui-secondary);
+  --secondary-foreground: var(--heroui-secondary-foreground);
+  --muted: var(--heroui-default-100);
+  --muted-foreground: var(--heroui-default-500);
+  --accent: var(--heroui-default-100);
+  --accent-foreground: var(--heroui-foreground);
+  --destructive: var(--heroui-danger);
+  --destructive-foreground: var(--heroui-danger-foreground);
+  --border: var(--heroui-divider);
+  --input: var(--heroui-default-200);
+  --ring: var(--heroui-focus);
+
+  /* Charts - unique to this app */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Sidebar - unique to this app */
+  --sidebar: var(--heroui-content1);
+  --sidebar-foreground: var(--heroui-foreground);
+  --sidebar-primary: var(--heroui-primary);
+  --sidebar-primary-foreground: var(--heroui-primary-foreground);
+  --sidebar-accent: var(--heroui-default-100);
+  --sidebar-accent-foreground: var(--heroui-foreground);
+  --sidebar-border: var(--heroui-divider);
+  --sidebar-ring: var(--heroui-focus);
+
+  /* Border Radius */
+  --radius: 0.625rem;
+}
+
+/* Dark Mode - only chart colors change, rest inherit from HeroUI */
+.dark {
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ========================================
+   TAILWIND V4 @theme CONFIGURATION
+   ======================================== */
+@theme {
+  /* Typography */
+  --font-size-base: 14px;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Layout */
+  --container-center: true;
+  --container-padding: 2rem;
+
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* Spacing Scale */
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-0\.5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1\.5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-2\.5: 0.625rem;
+  --spacing-3: 0.75rem;
+  --spacing-3\.5: 0.875rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-9: 2.25rem;
+  --spacing-10: 2.5rem;
+  --spacing-11: 2.75rem;
+  --spacing-12: 3rem;
+  --spacing-14: 3.5rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --spacing-28: 7rem;
+  --spacing-32: 8rem;
+  --spacing-36: 9rem;
+  --spacing-40: 10rem;
+  --spacing-44: 11rem;
+  --spacing-48: 12rem;
+  --spacing-52: 13rem;
+  --spacing-56: 14rem;
+  --spacing-60: 15rem;
+  --spacing-64: 16rem;
+  --spacing-72: 18rem;
+  --spacing-80: 20rem;
+  --spacing-96: 24rem;
+
+  /* Size Scale */
+  --size-0: 0px;
+  --size-px: 1px;
+  --size-0\.5: 0.125rem;
+  --size-1: 0.25rem;
+  --size-1\.5: 0.375rem;
+  --size-2: 0.5rem;
+  --size-2\.5: 0.625rem;
+  --size-3: 0.75rem;
+  --size-3\.5: 0.875rem;
+  --size-4: 1rem;
+  --size-5: 1.25rem;
+  --size-6: 1.5rem;
+  --size-7: 1.75rem;
+  --size-8: 2rem;
+  --size-9: 2.25rem;
+  --size-10: 2.5rem;
+  --size-11: 2.75rem;
+  --size-12: 3rem;
+  --size-14: 3.5rem;
+  --size-16: 4rem;
+  --size-20: 5rem;
+  --size-24: 6rem;
+  --size-28: 7rem;
+  --size-32: 8rem;
+  --size-36: 9rem;
+  --size-40: 10rem;
+  --size-44: 11rem;
+  --size-48: 12rem;
+  --size-52: 13rem;
+  --size-56: 14rem;
+  --size-60: 15rem;
+  --size-64: 16rem;
+  --size-72: 18rem;
+  --size-80: 20rem;
+  --size-96: 24rem;
+  --size-full: 100%;
+  --size-min: min-content;
+  --size-max: max-content;
+  --size-fit: fit-content;
+  --size-screen: 100vh;
+
+  /* Color References (for Tailwind utilities) */
+  /* Maps to CSS variables which reference HeroUI theme */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Border Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-full: 9999px;
+
+  /* ========================================
+     ANIMATIONS
+     ======================================== */
+
+  /* Keyframes */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin-reverse {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  @keyframes ping {
+    75%,
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(-25%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+      transform: translateY(0);
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+  }
+
+  @keyframes marquee {
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+
+  /* Animation Variables */
+  --animate-fade-in: fade-in 0.5s linear forwards;
+  --animate-fade-in-slow: fadeIn 1s ease-out forwards;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-spin: spin 1s linear infinite;
+  --animate-spin-slow: spin 4s linear infinite;
+  --animate-spin-slower: spin 6s linear infinite;
+  --animate-spin-reverse: spin-reverse 1s linear infinite;
+  --animate-spin-reverse-slow: spin-reverse 4s linear infinite;
+  --animate-spin-reverse-slower: spin-reverse 6s linear infinite;
+  --animate-ping: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce: bounce 1s infinite;
+  --animate-marquee: marquee var(--marquee-duration, 20s) linear infinite;
+  --animate-blob: blob 7s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      Oxygen,
+      Ubuntu,
+      Cantarell,
+      sans-serif;
+    line-height: 1.6;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+}
+
+/* ========================================
+   UTILITIES
+   ======================================== */
+@layer utilities {
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: var(--animate-fade-in-slow);
+  }
+
+  .animate-accordion-down {
+    animation: var(--animate-accordion-down);
+  }
+
+  .animate-accordion-up {
+    animation: var(--animate-accordion-up);
+  }
+
+  .animate-spin {
+    animation: var(--animate-spin);
+  }
+
+  .animate-spin-slow {
+    animation: var(--animate-spin-slow);
+  }
+
+  .animate-spin-slower {
+    animation: var(--animate-spin-slower);
+  }
+
+  .animate-ping {
+    animation: var(--animate-ping);
+  }
+
+  .animate-pulse {
+    animation: var(--animate-pulse);
+  }
+
+  .animate-bounce {
+    animation: var(--animate-bounce);
+  }
+
+  .animate-blob {
+    animation: var(--animate-blob);
+  }
+
+  /* Animation delays */
+  .animation-delay-1000 {
+    animation-delay: 1s;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-3000 {
+    animation-delay: 3s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  /* Text utilities */
+  .text-shadow {
+    text-shadow: 0px 1px 1px rgba(16, 24, 40, 0.08);
+  }
+
+  /* Backdrop blur */
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Glass morphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.19);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5.8px);
+    -webkit-backdrop-filter: blur(5.8px);
+    border: 1px solid rgba(255, 255, 255, 0.36);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 0 18px 9px rgba(255, 255, 255, 0.9);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    );
+  }
+
+  .glass-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.8),
+      transparent,
+      rgba(255, 255, 255, 0.3)
+    );
+  }
+
+  /* Remove number input spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    margin: 0;
+  }
+
+  /* No Scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Allocation Grid Responsive */
+  .allocation-grid-responsive {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  @media (min-width: 768px) {
+    .allocation-grid-responsive {
+      grid-template-columns: repeat(4, 1fr) !important;
+    }
+  }
+
+  /* Print Styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+  }
+}
+
+/* ========================================
+   CUSTOM SCROLLBAR
+   ======================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  margin-block: 4px;
+  margin-inline: 2px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.3);
+  font-family: monospace;
+}
+
+/* Scrollbar arrows */
+::-webkit-scrollbar-button:vertical:start:decrement {
+  border-top: 6px solid transparent;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 6px solid rgba(0, 0, 0, 0.4);
+}
+
+::-webkit-scrollbar-button:vertical:end:increment {
+  border-top: 6px solid rgba(0, 0, 0, 0.4);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+::-webkit-scrollbar-button:horizontal:start:decrement {
+  border-top: 4px solid transparent;
+  border-left: 6px solid transparent;
+  border-right: 6px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 4px solid transparent;
+}
+
+::-webkit-scrollbar-button:horizontal:end:increment {
+  border-top: 4px solid transparent;
+  border-left: 6px solid rgba(0, 0, 0, 0.4);
+  border-right: 6px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+/* Dark mode scrollbars */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.dark ::-webkit-scrollbar-button:vertical:start:decrement {
+  border-bottom-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark ::-webkit-scrollbar-button:vertical:end:increment {
+  border-top-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark ::-webkit-scrollbar-button:horizontal:start:decrement {
+  border-right-color: rgba(255, 255, 255, 0.4);
+}
+
+.dark ::-webkit-scrollbar-button:horizontal:end:increment {
+  border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ========================================
+   GRADIENT UTILITIES
+   ======================================== */
+.gradient-text {
+  background: linear-gradient(135deg, #ec4899, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.blue-gradient {
+  background: linear-gradient(90deg, #1b64ce 0%, #8c86f0 100%);
+}
+
+.gradient {
+  background: linear-gradient(
+    105deg,
+    hsl(229deg 88% 16%) 0%,
+    hsl(255deg 59% 21%) 0%,
+    hsl(272deg 56% 23%) 1%,
+    hsl(287deg 54% 25%) 3%,
+    hsl(300deg 50% 27%) 9%,
+    hsl(312deg 52% 32%) 20%,
+    hsl(320deg 52% 38%) 39%,
+    hsl(328deg 51% 43%) 57%,
+    hsl(334deg 49% 48%) 71%,
+    hsl(340deg 55% 54%) 81%,
+    hsl(346deg 65% 59%) 88%,
+    hsl(352deg 77% 65%) 95%,
+    hsl(359deg 92% 70%) 100%
+  );
+}
+
+.blue-gradient-text {
+  background: linear-gradient(90deg, #1b64ce 0%, #8c86f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Trial Banner Animations ── */
+@keyframes trial-shimmer {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(300%) skewX(-15deg); }
+}
+
+@keyframes trial-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 12px 2px color-mix(in oklab, var(--primary) 30%, transparent); }
+}
+
+@keyframes trial-badge-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes trial-progress-fill {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+.trial-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 60%
+  );
+  animation: trial-shimmer 4s ease-in-out infinite;
+}
+
+.trial-crown-glow {
+  animation: trial-glow-pulse 2.5s ease-in-out infinite;
+}
+
+.trial-badge-pulse {
+  animation: trial-badge-shimmer 2s ease-in-out infinite;
+}
+
+.trial-progress-bar {
+  animation: trial-progress-fill 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pixel-blast-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dashboard card shimmer gradient animation */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+/* ── Floating decoration animations (compositor-thread, no JS) ───────────── */
+/* Used by FloatingOrb and Particle components instead of framer-motion
+   repeat:Infinity to keep these off the JS main thread                      */
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(18px, -40px) scale(1.12); }
+}
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0); opacity: 0.15; }
+  50%       { transform: translateY(-22px); opacity: 0.55; }
+}
+/* Icon micro-animations (cards on EventManagementSection) */
+@keyframes icon-rock {
+  0%, 100% { transform: rotate(0deg); }
+  25%       { transform: rotate(var(--icon-angle, 7deg)); }
+  75%       { transform: rotate(calc(-1 * var(--icon-angle, 7deg))); }
+}
+@keyframes icon-slide-x {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(var(--icon-dx, 7px)); }
+}
+@keyframes icon-float-y {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(var(--icon-dy, -5px)); }
+}
+@keyframes icon-pulse-scale {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(var(--icon-scale, 1.12)); }
+}
+/* Combined scale+opacity pulse for blurred background orbs in modals/cards */
+@keyframes pulse-orb {
+  0%, 100% { transform: scale(1); opacity: var(--orb-opacity-low, 0.3); }
+  50%       { transform: scale(var(--orb-scale-hi, 1.2)); opacity: var(--orb-opacity-hi, 0.6); }
+}
+/* Floating element that drifts vertically while tilting (icon decorations) */
+@keyframes icon-float-and-tilt {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(var(--icon-dy, -10px)) rotate(var(--icon-angle, 5deg)); }
+}
+/* Bouncing chevron (scroll indicator) */
+@keyframes bounce-y {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(var(--bounce-y, 8px)); }
+}

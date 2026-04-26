@@ -1,0 +1,82 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules
+vendor
+
+# Build artifacts
+bin
+dist
+*.o
+*.a
+*.so
+.dll
+.dylib
+.exe
+.out
+
+# Test files
+*.test
+*.prof
+coverage.out
+coverage.html
+
+# Documentation
+docs
+README.md
+LICENSE
+
+# CI/CD
+.github
+.gitlab-ci.yml
+Jenkinsfile
+
+# Development
+.claude
+.venv
+venv
+*.log
+debug
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Node (frontend, if applicable)
+frontend/node_modules
+frontend/.next
+frontend/dist
+frontend/build
+
+# Python
+__pycache__
+*.pyc
+*.pyo
