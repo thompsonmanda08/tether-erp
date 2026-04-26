@@ -1,3 +1,4 @@
+import Logo from "@/components/base/logo";
 import Image from "next/image";
 import Link from "next/link";
 import { PropsWithChildren } from "react";
@@ -11,12 +12,12 @@ function AuthLayout({ children }: PropsWithChildren) {
       <div className="flex flex-col w-full lg:w-[45%] xl:w-[42%] px-6 sm:px-10 lg:px-16 py-8">
         {/* Logo top-left */}
         <Link href="/" className="inline-flex items-center gap-2 w-fit">
-          <Image
-            src="/images/logo/logo-icon.svg"
-            alt="Tether-ERP"
-            width={36}
-            height={36}
-            className="w-9 h-9 object-contain"
+          <Logo
+            // src="/images/logo/logo-icon.svg"
+            // alt="Tether-ERP"
+            // width={36}
+            // height={36}
+            // className="w-9 h-9 object-contain"
           />
           <span className="text-xl font-bold text-slate-900 tracking-tight">
             Tether-ERP

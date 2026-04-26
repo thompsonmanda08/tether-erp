@@ -659,27 +659,48 @@
 
 /* ── Trial Banner Animations ── */
 @keyframes trial-shimmer {
-  0% { transform: translateX(-100%) skewX(-15deg); }
-  100% { transform: translateX(300%) skewX(-15deg); }
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(300%) skewX(-15deg);
+  }
 }
 
 @keyframes trial-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 transparent; }
-  50% { box-shadow: 0 0 12px 2px color-mix(in oklab, var(--primary) 30%, transparent); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 12px 2px
+      color-mix(in oklab, var(--primary) 30%, transparent);
+  }
 }
 
 @keyframes trial-badge-shimmer {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes trial-progress-fill {
-  from { transform: scaleX(0); transform-origin: left; }
-  to { transform: scaleX(1); transform-origin: left; }
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 
 .trial-shimmer::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -712,51 +733,106 @@
 
 /* Dashboard card shimmer gradient animation */
 @keyframes shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
 }
 
 /* ── Floating decoration animations (compositor-thread, no JS) ───────────── */
 /* Used by FloatingOrb and Particle components instead of framer-motion
    repeat:Infinity to keep these off the JS main thread                      */
 @keyframes float-orb {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(18px, -40px) scale(1.12); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(18px, -40px) scale(1.12);
+  }
 }
 @keyframes float-particle {
-  0%, 100% { transform: translateY(0); opacity: 0.15; }
-  50%       { transform: translateY(-22px); opacity: 0.55; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translateY(-22px);
+    opacity: 0.55;
+  }
 }
 /* Icon micro-animations (cards on EventManagementSection) */
 @keyframes icon-rock {
-  0%, 100% { transform: rotate(0deg); }
-  25%       { transform: rotate(var(--icon-angle, 7deg)); }
-  75%       { transform: rotate(calc(-1 * var(--icon-angle, 7deg))); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(var(--icon-angle, 7deg));
+  }
+  75% {
+    transform: rotate(calc(-1 * var(--icon-angle, 7deg)));
+  }
 }
 @keyframes icon-slide-x {
-  0%, 100% { transform: translateX(0); }
-  50%       { transform: translateX(var(--icon-dx, 7px)); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(var(--icon-dx, 7px));
+  }
 }
 @keyframes icon-float-y {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(var(--icon-dy, -5px)); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--icon-dy, -5px));
+  }
 }
 @keyframes icon-pulse-scale {
-  0%, 100% { transform: scale(1); }
-  50%       { transform: scale(var(--icon-scale, 1.12)); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(var(--icon-scale, 1.12));
+  }
 }
 /* Combined scale+opacity pulse for blurred background orbs in modals/cards */
 @keyframes pulse-orb {
-  0%, 100% { transform: scale(1); opacity: var(--orb-opacity-low, 0.3); }
-  50%       { transform: scale(var(--orb-scale-hi, 1.2)); opacity: var(--orb-opacity-hi, 0.6); }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: var(--orb-opacity-low, 0.3);
+  }
+  50% {
+    transform: scale(var(--orb-scale-hi, 1.2));
+    opacity: var(--orb-opacity-hi, 0.6);
+  }
 }
 /* Floating element that drifts vertically while tilting (icon decorations) */
 @keyframes icon-float-and-tilt {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50%       { transform: translateY(var(--icon-dy, -10px)) rotate(var(--icon-angle, 5deg)); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(var(--icon-dy, -10px)) rotate(var(--icon-angle, 5deg));
+  }
 }
 /* Bouncing chevron (scroll indicator) */
 @keyframes bounce-y {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(var(--bounce-y, 8px)); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--bounce-y, 8px));
+  }
 }

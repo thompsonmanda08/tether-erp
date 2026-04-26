@@ -1,164 +1,183 @@
-# Tether-ERP - Makefile
-# Build and development automation
+# Tether-ERP — root Makefile
+# Orchestrates the Go backend and the pnpm-workspace frontends.
 
-.PHONY: help build build-all build-backend build-web build-admin test test-backend test-web clean migrate indexes install check-env verify dev-backend dev-web dev-admin air
+.PHONY: help \
+        build build-backend build-web build-admin build-frontend \
+        dev-backend dev-web dev-admin dev air \
+        start-web start-admin \
+        lint lint-frontend lint-backend \
+        test test-backend test-frontend test-web \
+        migrate migrate-status migrate-down migrate-reset migrate-version \
+        sqlc-gen \
+        install install-backend install-frontend \
+        clean check-env verify
 
-# Default target
+# ----------------------------------------------------------------------------
+# HELP
+# ----------------------------------------------------------------------------
 help:
-	@echo "Tether-ERP - Available Commands"
+	@echo "Tether-ERP — Available Commands"
 	@echo ""
 	@echo "Build:"
-	@echo "  make build               - Build all apps"
-	@echo "  make build-backend       - Build backend only"
-	@echo "  make build-web           - Build web frontend only"
-	@echo "  make build-admin         - Build admin console only"
-	@echo ""
-	@echo "Database:"
-	@echo "  make migrate             - Run database migrations"
-	@echo "  make indexes             - Create concurrent indexes (performance optimization)"
-	@echo ""
-	@echo "  📖 Database Documentation:"
-	@echo "     backend/database/README.md              - Database management guide"
-	@echo "     backend/database/migrations/README.md   - Detailed migration guide"
-	@echo "     backend/database/MIGRATION_SUMMARY.md   - Migration history"
-	@echo ""
-	@echo "Testing:"
-	@echo "  make test                - Run all tests"
-	@echo "  make test-backend        - Run backend tests"
-	@echo "  make test-web            - Run web frontend tests"
+	@echo "  make build              - Build backend + both frontends"
+	@echo "  make build-backend      - Build backend binary"
+	@echo "  make build-frontend     - Build both frontend apps (web + admin)"
+	@echo "  make build-web          - Build web frontend only"
+	@echo "  make build-admin        - Build admin frontend only"
 	@echo ""
 	@echo "Development:"
-	@echo "  make dev-backend         - Run backend in dev mode"
-	@echo "  make air                 - Run backend with air (hot-reload)"
-	@echo "  make dev-web             - Run web frontend in dev mode"
-	@echo "  make dev-admin           - Run admin console in dev mode"
+	@echo "  make dev-backend        - Run backend (go run)"
+	@echo "  make air                - Run backend with air hot-reload"
+	@echo "  make dev-web            - Run web frontend dev server"
+	@echo "  make dev-admin          - Run admin frontend dev server"
+	@echo "  make start-web          - Run web frontend in production mode"
+	@echo "  make start-admin        - Run admin frontend in production mode"
+	@echo ""
+	@echo "Database:"
+	@echo "  make migrate            - Apply pending goose migrations"
+	@echo "  make migrate-status     - Show migration status"
+	@echo "  make migrate-down       - Roll back one migration"
+	@echo "  make migrate-version    - Print current DB version"
+	@echo "  make migrate-reset      - Drop public schema then re-apply all migrations"
+	@echo "  make sqlc-gen           - Regenerate sqlc Go code"
+	@echo ""
+	@echo "Lint / Test:"
+	@echo "  make lint               - Lint backend + frontends"
+	@echo "  make test               - Test backend + frontends"
 	@echo ""
 	@echo "Utilities:"
-	@echo "  make clean               - Clean build artifacts"
-	@echo "  make install             - Install dependencies"
-	@echo "  make check-env           - Verify environment setup"
-	@echo "  make verify              - Build + test"
+	@echo "  make install            - Install backend + frontend dependencies"
+	@echo "  make clean              - Remove build artifacts"
+	@echo "  make check-env          - Verify .env files exist"
+	@echo "  make verify             - Build + test"
 
-# ============================================================================
-# BUILD COMMANDS
-# ============================================================================
+# ----------------------------------------------------------------------------
+# BUILD
+# ----------------------------------------------------------------------------
+build: build-backend build-frontend
+	@echo "✅ All apps built"
 
-# Build all apps
-build: build-backend build-web build-admin
-	@echo "✅ All apps built successfully!"
-
-build-all: build
-
-# Build backend
 build-backend:
 	@echo "🔨 Building backend..."
 	@cd backend && go build -o tether-erp-backend .
 	@echo "✅ Backend built: backend/tether-erp-backend"
 
-# Build web frontend
+build-frontend:
+	@echo "🔨 Building frontends (web + admin)..."
+	@pnpm -r --filter "./frontend/*" run build
+	@echo "✅ Frontends built"
+
 build-web:
 	@echo "🔨 Building web frontend..."
-	@cd frontend && npm run build
-	@echo "✅ Web frontend built: frontend/.next/"
+	@pnpm --filter tether-erp-frontend run build
+	@echo "✅ Web frontend built: frontend/web/.next/"
 
-# Build admin console
 build-admin:
-	@echo "🔨 Building admin console..."
-	@cd admin-console && npm run build
-	@echo "✅ Admin console built: admin-console/.next/"
+	@echo "🔨 Building admin frontend..."
+	@pnpm --filter tether-erp-procurement run build
+	@echo "✅ Admin frontend built: frontend/admin/.next/"
 
-# ============================================================================
-# DATABASE COMMANDS
-# ============================================================================
-
-# Run database migrations
-migrate:
-	@echo "🗄️  Running database migrations..."
-	@cd backend && export $$(cat .env | grep -v '^#' | xargs) && go run cmd/migrate/main.go
-	@echo "✅ Migrations completed!"
-
-# Create concurrent indexes (run separately, not in transaction)
-indexes:
-	@echo "📊 Creating concurrent indexes..."
-	@cd backend && export $$(cat .env | grep -v '^#' | xargs) && psql $$DATABASE_URL -f database/scripts/create_concurrent_indexes.sql
-	@echo "✅ Indexes created!"
-
-# ============================================================================
-# TESTING COMMANDS
-# ============================================================================
-
-# Run all tests
-test: test-backend test-web
-	@echo "✅ All tests passed!"
-
-# Run backend tests
-test-backend:
-	@echo "🧪 Running backend tests..."
-	@cd backend && go test ./...
-	@echo "✅ Backend tests passed!"
-
-# Run web frontend tests
-test-web:
-	@echo "🧪 Running web frontend tests..."
-	@cd frontend && npm run build
-	@echo "✅ Web frontend tests passed!"
-
-# ============================================================================
-# DEVELOPMENT COMMANDS
-# ============================================================================
-
-# Run backend in dev mode
+# ----------------------------------------------------------------------------
+# DEVELOPMENT
+# ----------------------------------------------------------------------------
 dev-backend:
-	@echo "🔧 Starting backend in dev mode..."
+	@echo "🔧 Starting backend (go run)..."
 	@cd backend && go run main.go
 
-# Run backend with air (hot-reload)
 air:
 	@echo "🔥 Starting backend with air (hot-reload)..."
 	@cd backend && air
 
-# Run web frontend in dev mode
 dev-web:
-	@echo "🔧 Starting web frontend in dev mode..."
-	@cd frontend && npm run dev
+	@echo "🔧 Starting web frontend (port 3000)..."
+	@pnpm --filter tether-erp-frontend run dev
 
-# Run admin console in dev mode
 dev-admin:
-	@echo "🔧 Starting admin console in dev mode..."
-	@cd admin-console && npm run dev
+	@echo "🔧 Starting admin frontend (port 3001)..."
+	@pnpm --filter tether-erp-procurement run dev
 
-# ============================================================================
-# UTILITY COMMANDS
-# ============================================================================
+start-web:
+	@pnpm --filter tether-erp-frontend run start
 
-# Clean build artifacts
+start-admin:
+	@pnpm --filter tether-erp-procurement run start
+
+# ----------------------------------------------------------------------------
+# DATABASE (goose + sqlc)
+# ----------------------------------------------------------------------------
+migrate:
+	@echo "🗄️  Applying migrations..."
+	@cd backend && go run ./cmd/migrate
+
+migrate-status:
+	@cd backend && go run ./cmd/migrate -status
+
+migrate-down:
+	@cd backend && go run ./cmd/migrate -down
+
+migrate-version:
+	@cd backend && go run ./cmd/migrate -version
+
+migrate-reset:
+	@echo "⚠️  Dropping public schema and re-applying migrations..."
+	@cd backend && go run ./cmd/migrate -reset
+
+sqlc-gen:
+	@echo "🛠  Regenerating sqlc..."
+	@sqlc generate
+	@echo "✅ sqlc regenerated"
+
+# ----------------------------------------------------------------------------
+# LINT
+# ----------------------------------------------------------------------------
+lint: lint-backend lint-frontend
+
+lint-backend:
+	@cd backend && (test -x "$$(command -v golangci-lint)" && golangci-lint run || go vet ./...)
+
+lint-frontend:
+	@pnpm -r --filter "./frontend/*" run lint
+
+# ----------------------------------------------------------------------------
+# TEST
+# ----------------------------------------------------------------------------
+test: test-backend test-frontend
+
+test-backend:
+	@echo "🧪 Backend tests..."
+	@cd backend && go test ./...
+
+test-frontend: test-web
+
+test-web:
+	@echo "🧪 Web frontend tests..."
+	@pnpm --filter tether-erp-frontend run test:run
+
+# ----------------------------------------------------------------------------
+# UTILITIES
+# ----------------------------------------------------------------------------
+install: install-backend install-frontend
+
+install-backend:
+	@echo "📦 Installing Go dependencies..."
+	@cd backend && go mod download
+
+install-frontend:
+	@echo "📦 Installing pnpm workspace dependencies..."
+	@pnpm install
+
 clean:
 	@echo "🧹 Cleaning build artifacts..."
 	@rm -f backend/tether-erp-backend
-	@rm -rf frontend/.next
-	@rm -rf frontend/node_modules/.cache
-	@rm -rf admin-console/.next
-	@rm -rf admin-console/node_modules/.cache
-	@echo "✅ Clean complete!"
+	@rm -rf backend/tmp
+	@rm -rf frontend/web/.next frontend/admin/.next
+	@echo "✅ Clean complete"
 
-# Install dependencies
-install:
-	@echo "📦 Installing dependencies..."
-	@cd backend && go mod download
-	@cd frontend && npm install
-	@cd admin-console && npm install
-	@echo "✅ Dependencies installed!"
-
-# Check environment setup
 check-env:
-	@echo "🔍 Checking environment setup..."
-	@echo "Backend .env:"
-	@test -f backend/.env && echo "  ✅ backend/.env exists" || echo "  ❌ backend/.env missing"
-	@echo "Frontend .env:"
-	@test -f frontend/.env && echo "  ✅ frontend/.env exists" || echo "  ❌ frontend/.env missing"
-	@echo "Admin Console .env:"
-	@test -f admin-console/.env && echo "  ✅ admin-console/.env exists" || echo "  ❌ admin-console/.env missing"
+	@echo "🔍 Checking environment files..."
+	@test -f backend/.env       && echo "  ✅ backend/.env"       || echo "  ❌ backend/.env missing"
+	@test -f frontend/web/.env  && echo "  ✅ frontend/web/.env"  || echo "  ⚠️  frontend/web/.env missing"
+	@test -f frontend/admin/.env && echo "  ✅ frontend/admin/.env" || echo "  ⚠️  frontend/admin/.env missing"
 
-# Verify builds
 verify: build test
-	@echo "✅ All builds verified!"
+	@echo "✅ All builds verified"

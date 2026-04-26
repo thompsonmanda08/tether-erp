@@ -10,9 +10,11 @@
 /* HeroUI plugin — hero.ts is the source of truth for all colors */
 @plugin './hero.ts';
 
-/* Scan app source and HeroUI theme for class names */
+/* Scan app source and HeroUI theme for class names.
+   The @heroui path resolves to the workspace-root node_modules where
+   pnpm hoists @heroui/* via .npmrc public-hoist-pattern. */
 @source '../**/*.{js,ts,jsx,tsx}';
-@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@source '../../../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 
 /* ========================================
    CSS VARIABLE MAPPINGS

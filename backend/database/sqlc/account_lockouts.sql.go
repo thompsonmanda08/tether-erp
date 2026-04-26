@@ -30,13 +30,21 @@ INSERT INTO account_lockouts (
 ) RETURNING id, user_id, email, ip_address, reason, locked_at, unlocks_at, active
 `
 
-func (q *Queries) CreateAccountLockout(ctx context.Context, userID string, email string, ipAddress *string, reason string, unlocksAt pgtype.Timestamptz) (AccountLockout, error) {
+type CreateAccountLockoutParams struct {
+	UserID    string             `json:"userId"`
+	Email     string             `json:"email"`
+	IpAddress *string            `json:"ipAddress"`
+	Reason    string             `json:"reason"`
+	UnlocksAt pgtype.Timestamptz `json:"unlocksAt"`
+}
+
+func (q *Queries) CreateAccountLockout(ctx context.Context, arg CreateAccountLockoutParams) (AccountLockout, error) {
 	row := q.db.QueryRow(ctx, createAccountLockout,
-		userID,
-		email,
-		ipAddress,
-		reason,
-		unlocksAt,
+		arg.UserID,
+		arg.Email,
+		arg.IpAddress,
+		arg.Reason,
+		arg.UnlocksAt,
 	)
 	var i AccountLockout
 	err := row.Scan(
@@ -59,8 +67,12 @@ ORDER BY locked_at DESC
 LIMIT 1
 `
 
-func (q *Queries) GetAccountLockoutByEmail(ctx context.Context, email string) (AccountLockout, error) {
-	row := q.db.QueryRow(ctx, getAccountLockoutByEmail, email)
+type GetAccountLockoutByEmailParams struct {
+	Email string `json:"email"`
+}
+
+func (q *Queries) GetAccountLockoutByEmail(ctx context.Context, arg GetAccountLockoutByEmailParams) (AccountLockout, error) {
+	row := q.db.QueryRow(ctx, getAccountLockoutByEmail, arg.Email)
 	var i AccountLockout
 	err := row.Scan(
 		&i.ID,
@@ -82,8 +94,14 @@ ORDER BY locked_at DESC
 LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) GetAccountLockoutHistory(ctx context.Context, userID string, limit int32, offset int32) ([]AccountLockout, error) {
-	rows, err := q.db.Query(ctx, getAccountLockoutHistory, userID, limit, offset)
+type GetAccountLockoutHistoryParams struct {
+	UserID string `json:"userId"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+
+func (q *Queries) GetAccountLockoutHistory(ctx context.Context, arg GetAccountLockoutHistoryParams) ([]AccountLockout, error) {
+	rows, err := q.db.Query(ctx, getAccountLockoutHistory, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +136,12 @@ ORDER BY locked_at DESC
 LIMIT 1
 `
 
-func (q *Queries) GetActiveAccountLockout(ctx context.Context, userID string) (AccountLockout, error) {
-	row := q.db.QueryRow(ctx, getActiveAccountLockout, userID)
+type GetActiveAccountLockoutParams struct {
+	UserID string `json:"userId"`
+}
+
+func (q *Queries) GetActiveAccountLockout(ctx context.Context, arg GetActiveAccountLockoutParams) (AccountLockout, error) {
+	row := q.db.QueryRow(ctx, getActiveAccountLockout, arg.UserID)
 	var i AccountLockout
 	err := row.Scan(
 		&i.ID,
@@ -140,8 +162,12 @@ UPDATE account_lockouts SET
 WHERE user_id = $1 AND active = true
 `
 
-func (q *Queries) UnlockAccount(ctx context.Context, userID string) error {
-	_, err := q.db.Exec(ctx, unlockAccount, userID)
+type UnlockAccountParams struct {
+	UserID string `json:"userId"`
+}
+
+func (q *Queries) UnlockAccount(ctx context.Context, arg UnlockAccountParams) error {
+	_, err := q.db.Exec(ctx, unlockAccount, arg.UserID)
 	return err
 }
 
@@ -151,7 +177,11 @@ UPDATE account_lockouts SET
 WHERE email = $1 AND active = true
 `
 
-func (q *Queries) UnlockAccountByEmail(ctx context.Context, email string) error {
-	_, err := q.db.Exec(ctx, unlockAccountByEmail, email)
+type UnlockAccountByEmailParams struct {
+	Email string `json:"email"`
+}
+
+func (q *Queries) UnlockAccountByEmail(ctx context.Context, arg UnlockAccountByEmailParams) error {
+	_, err := q.db.Exec(ctx, unlockAccountByEmail, arg.Email)
 	return err
 }
