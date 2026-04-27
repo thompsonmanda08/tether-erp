@@ -1,8 +1,3 @@
-/**
- * Tickety Design System - Complete Theme for Tailwind V4
- * Location: apps/web/src/app/globals.css
- */
-
 /* ========================================
    TAILWIND V4 IMPORTS
    ======================================== */
@@ -173,7 +168,8 @@
   --size-screen: 100vh;
 
   /* Color References (for Tailwind utilities) */
-  /* Maps to CSS variables which reference HeroUI theme */
+  /* HeroUI v2 emits CSS vars as HSL channel tuples (e.g. "2 78% 71%"),
+     so the hsl() wrapper IS required here. Don't strip it. */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));

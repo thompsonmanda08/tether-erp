@@ -1,95 +1,104 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { cn } from "@/lib/utils";
+import { ButtonProps, Button as NextUIButton } from "@heroui/react";
 
-import { Button as NextUIButton } from "@heroui/react";
-import * as React from "react";
-import { cn } from "@/lib/utils/index";
+// Map common shadcn/ui variants to HeroUI variants
+const variantMap: Record<string, ButtonProps["variant"]> = {
+  default: "solid",
+  outline: "bordered",
+  destructive: "solid",
+  ghost: "light",
+  link: "light",
+  secondary: "flat",
+};
 
-export interface ButtonProps extends React.ComponentProps<typeof NextUIButton> {
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-  size?: "default" | "sm" | "lg" | "icon";
-  asChild?: boolean;
-  isLoading?: boolean;
+const colorMap: Record<string, ButtonProps["color"]> = {
+  destructive: "danger",
+  default: "primary",
+  outline: "default",
+  ghost: "default",
+  link: "primary",
+  secondary: "default",
+};
+
+export function Button({
+  children,
+  loadingText,
+  className,
+  onClick,
+  variant: customVariant,
+  isIconOnly,
+  ...props
+}: ButtonProps & {
   loadingText?: string;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
+  variant?:
+    | ButtonProps["variant"]
+    | "default"
+    | "outline"
+    | "destructive"
+    | "link"
+    | "secondary";
+  isIconOnly?: boolean;
+}) {
+  // Map variant if it's a custom one
+  const mappedVariant =
+    customVariant &&
+    typeof customVariant === "string" &&
+    customVariant in variantMap
+      ? variantMap[customVariant]
+      : (customVariant as ButtonProps["variant"]) || "solid";
+
+  const mappedColor =
+    customVariant &&
+    typeof customVariant === "string" &&
+    customVariant in colorMap
+      ? colorMap[customVariant]
+      : props.color || "primary";
+
+  return (
+    <NextUIButton
+      className={cn(
+        "min-w-max font-semibold ",
+        {
+          "text-foreground":
+            mappedVariant !== "solid" && mappedColor !== "primary",
+        },
+        className,
+      )}
+      radius="sm"
+      onPress={props?.onPress || (onClick ? () => onClick(undefined as never) : undefined)}
+      size={props?.size || "md"}
+      variant={mappedVariant}
+      color={mappedColor}
+      isIconOnly={isIconOnly}
+      spinner={
+        <svg
+          className="h-5 w-5 animate-spin text-current"
+          fill="none"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            fill="currentColor"
+          />
+        </svg>
+      }
+      {...props}
+    >
+      {props.isLoading ? loadingText || "" : children}
+    </NextUIButton>
+  );
 }
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className,
-      variant = "default",
-      size = "default",
-      asChild = false,
-      isLoading = false,
-      loadingText = "",
-      disabled,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    // Map shadcn variants to NextUI props
-    const getNextUIProps = () => {
-      const baseProps: any = {
-        isDisabled: disabled,
-        isLoading: isLoading,
-        ref,
-      };
-
-      switch (variant) {
-        case "destructive":
-          baseProps.color = "danger";
-          break;
-        case "outline":
-          baseProps.variant = "bordered";
-          baseProps.color = "default";
-          break;
-        case "secondary":
-          baseProps.color = "secondary";
-          break;
-        case "ghost":
-          baseProps.variant = "light";
-          break;
-        case "link":
-          baseProps.variant = "light";
-          baseProps.className = cn("underline-offset-4 hover:underline", className);
-          break;
-        default:
-          baseProps.color = "primary";
-      }
-
-      // Map sizes
-      switch (size) {
-        case "sm":
-          baseProps.size = "sm";
-          break;
-        case "lg":
-          baseProps.size = "lg";
-          break;
-        case "icon":
-          baseProps.isIconOnly = true;
-          baseProps.size = "md";
-          break;
-        default:
-          baseProps.size = "md";
-      }
-
-      return baseProps;
-    };
-
-    const nextUIProps = getNextUIProps();
-
-    return (
-      <NextUIButton
-        {...nextUIProps}
-        className={cn(className, nextUIProps.className)}
-        {...props}
-      >
-        {isLoading && loadingText ? loadingText : children}
-      </NextUIButton>
-    );
-  }
-);
-
-Button.displayName = "Button";
-
-export { Button };

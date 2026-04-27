@@ -75,11 +75,6 @@ export default function Signup() {
 
   return (
     <div className="w-full max-w-md">
-      {/* Logo */}
-      <div className="text-left space-y-2 mb-3">
-        <Logo isFull href="/" />
-      </div>
-
       {/* Header */}
       <div className="text-left mb-6">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
@@ -178,7 +173,10 @@ export default function Signup() {
               type="button"
               className="absolute right-3 top-9 text-slate-400 hover:text-slate-600"
               onClick={() =>
-                setShowPassword((prev) => ({ ...prev, password: !prev.password }))
+                setShowPassword((prev) => ({
+                  ...prev,
+                  password: !prev.password,
+                }))
               }
               disabled={isPending}
             >
