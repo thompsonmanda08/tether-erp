@@ -44,24 +44,11 @@ function Logo({
     let logoType: string;
 
     if (isIcon) {
-      logoType =
-        theme === "light" || theme === "dark"
-          ? `/images/logo/logo-icon-${theme}.svg`
-          : `/images/logo/logo-icon.svg`;
-    } else if (isWhite) {
-      logoType = "/images/logo/logo-light.svg";
-    } else if (isDark) {
-      logoType = "/images/logo/logo-dark.svg";
+      logoType = `/images/logo/logo-icon.svg`;
     } else if (isFull) {
-      logoType =
-        theme === "light" || theme === "dark"
-          ? `/images/logo/logo-full-${theme}.svg`
-          : "/images/logo/logo-full-dark.svg";
+      logoType = "/images/logo/logo-full.svg";
     } else {
-      logoType =
-        theme === "light" || theme === "dark"
-          ? `/images/logo/logo-${theme}.svg`
-          : "/images/logo/logo-dark.svg";
+      logoType = `/images/logo/logo.svg`;
     }
 
     setLogoUrl(logoType);
@@ -82,12 +69,13 @@ function Logo({
             className,
             {
               "max-w-12 mx-auto max-h-12 min-h-12 ": isIcon,
-            },classNames?.container
+            },
+            classNames?.container,
           )}
         >
           <Image
             alt={alt || "logo"}
-            className={cn("object-contain",classNames?.image )}
+            className={cn("object-contain", classNames?.image)}
             height={50}
             src={logoUrl}
             width={50}
@@ -98,10 +86,19 @@ function Logo({
   } else {
     return (
       <Link href={href} className={classNames?.link}>
-        <div className={cn(`w-full min-w-fit items-center`, className, classNames?.container)}>
+        <div
+          className={cn(
+            `w-full min-w-fit items-center`,
+            className,
+            classNames?.container,
+          )}
+        >
           <Image
             alt={alt || "logo"}
-            className={cn("object-contain transition-all my-auto min-h-8 duration-300 ease-in-out", classNames?.image)}
+            className={cn(
+              "object-contain transition-all my-auto min-h-8 duration-300 ease-in-out",
+              classNames?.image,
+            )}
             height={60}
             src={src || logoUrl}
             width={160}

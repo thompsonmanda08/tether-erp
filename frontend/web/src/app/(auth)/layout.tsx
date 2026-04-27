@@ -12,16 +12,7 @@ function AuthLayout({ children }: PropsWithChildren) {
       <div className="flex flex-col w-full lg:w-[45%] xl:w-[42%] px-6 sm:px-10 lg:px-16 py-8">
         {/* Logo top-left */}
         <Link href="/" className="inline-flex items-center gap-2 w-fit">
-          <Logo
-            // src="/images/logo/logo-icon.svg"
-            // alt="Tether-ERP"
-            // width={36}
-            // height={36}
-            // className="w-9 h-9 object-contain"
-          />
-          <span className="text-xl font-bold text-slate-900 tracking-tight">
-            Tether-ERP
-          </span>
+          <Logo isFull />
         </Link>
 
         {/* Centered form content */}
@@ -75,15 +66,21 @@ function DashboardMockup() {
         {/* Top stats row */}
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-1 bg-primary/10 rounded-xl p-3">
-            <p className="text-[10px] text-slate-500 font-medium">Total Sales</p>
-            <p className="text-[9px] text-slate-400">Total earnings, from sales</p>
+            <p className="text-[10px] text-slate-500 font-medium">
+              Total Sales
+            </p>
+            <p className="text-[9px] text-slate-400">
+              Total earnings, from sales
+            </p>
             <p className="text-lg font-bold text-slate-900 mt-2">$189,374</p>
             <span className="inline-block mt-1 text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
               +12% From last month
             </span>
           </div>
           <div className="col-span-1 bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-500 font-medium">Chat Performance</p>
+            <p className="text-[10px] text-slate-500 font-medium">
+              Chat Performance
+            </p>
             <p className="text-lg font-bold text-slate-900 mt-2">00:01:30</p>
             {/* Tiny line chart */}
             <svg viewBox="0 0 100 30" className="w-full h-8 mt-1">
@@ -96,7 +93,9 @@ function DashboardMockup() {
             </svg>
           </div>
           <div className="col-span-1 bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-500 font-medium">Sales Overview</p>
+            <p className="text-[10px] text-slate-500 font-medium">
+              Sales Overview
+            </p>
             <p className="text-[9px] text-slate-400">Weekly</p>
             {/* Tiny bar chart */}
             <div className="flex items-end justify-between h-10 mt-2 gap-1">
@@ -114,7 +113,9 @@ function DashboardMockup() {
         {/* Second row */}
         <div className="grid grid-cols-3 gap-3 mt-3">
           <div className="col-span-1 bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-500 font-medium">Total Profit</p>
+            <p className="text-[10px] text-slate-500 font-medium">
+              Total Profit
+            </p>
             <p className="text-lg font-bold text-slate-900 mt-2">$25,684</p>
             <span className="inline-block mt-1 text-[9px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
               +8% From last month
@@ -143,10 +144,38 @@ function DashboardMockup() {
             </thead>
             <tbody className="text-slate-700">
               {[
-                { id: "#SLR001", name: "Apple iPad Gen 11", date: "13 Feb, 2025", price: "$449", status: "Pending", tone: "amber" },
-                { id: "#SLR002", name: "Apple iPhone 15", date: "13 Feb, 2025", price: "$999", status: "Paid", tone: "emerald" },
-                { id: "#SLR003", name: "Apple MacBook Air M2", date: "13 Feb, 2025", price: "$1,299", status: "Paid", tone: "emerald" },
-                { id: "#SLR004", name: "Apple iMac", date: "13 Feb, 2025", price: "$1,599", status: "Paid", tone: "emerald" },
+                {
+                  id: "#SLR001",
+                  name: "Apple iPad Gen 11",
+                  date: "13 Feb, 2025",
+                  price: "$449",
+                  status: "Pending",
+                  tone: "amber",
+                },
+                {
+                  id: "#SLR002",
+                  name: "Apple iPhone 15",
+                  date: "13 Feb, 2025",
+                  price: "$999",
+                  status: "Paid",
+                  tone: "emerald",
+                },
+                {
+                  id: "#SLR003",
+                  name: "Apple MacBook Air M2",
+                  date: "13 Feb, 2025",
+                  price: "$1,299",
+                  status: "Paid",
+                  tone: "emerald",
+                },
+                {
+                  id: "#SLR004",
+                  name: "Apple iMac",
+                  date: "13 Feb, 2025",
+                  price: "$1,599",
+                  status: "Paid",
+                  tone: "emerald",
+                },
               ].map((r) => (
                 <tr key={r.id} className="border-t border-slate-100">
                   <td className="py-1.5">{r.id}</td>
@@ -173,12 +202,23 @@ function DashboardMockup() {
 
       {/* Floating Sales Categories card */}
       <div className="absolute -right-4 top-20 w-44 bg-white rounded-2xl shadow-2xl p-3 hidden xl:block">
-        <p className="text-[10px] font-semibold text-slate-900">Sales Categories</p>
-        <p className="text-[9px] text-slate-400">Your sales product categories</p>
+        <p className="text-[10px] font-semibold text-slate-900">
+          Sales Categories
+        </p>
+        <p className="text-[9px] text-slate-400">
+          Your sales product categories
+        </p>
         {/* Donut */}
         <div className="relative mt-3 mx-auto w-24 h-24">
           <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3.5" />
+            <circle
+              cx="18"
+              cy="18"
+              r="15.9"
+              fill="none"
+              stroke="#e5e7eb"
+              strokeWidth="3.5"
+            />
             <circle
               cx="18"
               cy="18"
