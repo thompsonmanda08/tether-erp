@@ -39,6 +39,8 @@ import {
   Blocks,
   ClipboardCopy,
   CogIcon,
+  Building,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -170,6 +172,28 @@ export const routes: NavGroup[] = [
         title: "User Management",
         href: "/admin/users",
         icon: UsersIcon,
+        items: [
+          {
+            title: "Users",
+            href: "/admin/users?tab=users",
+            icon: UsersIcon,
+          },
+          {
+            title: "Departments",
+            href: "/admin/users?tab=departments",
+            icon: Building,
+          },
+          {
+            title: "Branches",
+            href: "/admin/users?tab=branches",
+            icon: StoreIcon,
+          },
+          {
+            title: "Roles",
+            href: "/admin/users?tab=roles",
+            icon: Shield,
+          },
+        ],
       },
       {
         title: "Processes & Workflows",

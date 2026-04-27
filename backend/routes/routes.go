@@ -32,6 +32,10 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	public.Get("/public/verify/:documentNumber", handlerRegistry.Document.VerifyDocumentPublic)
 	public.Get("/public/verify/:documentNumber/document", handlerRegistry.Document.GetDocumentForPDFPublic)
 
+	// Public reference data — no auth required
+	public.Get("/provinces", handlers.GetProvinces)
+	public.Get("/towns", handlers.GetTowns)
+
 	// Activity logging middleware (async, non-blocking — attaches after auth)
 	var activityMiddleware fiber.Handler
 	if len(activityService) > 0 && activityService[0] != nil {

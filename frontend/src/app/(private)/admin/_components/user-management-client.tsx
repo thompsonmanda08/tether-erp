@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Building2, Shield, Logs, GitBranch } from "lucide-react";
 import DepartmentsConfig from "./departments-config";
@@ -15,13 +16,18 @@ interface UserManagementClientProps {
   usersTabContent?: ReactNode;
 }
 
+type TabValue = "users" | "departments" | "roles" | "branches" | "logs";
+const VALID_TABS: TabValue[] = ["users", "departments", "roles", "branches", "logs"];
+
 export function UserManagementClient({
   userId,
   userRole,
   usersTabContent,
 }: UserManagementClientProps) {
-  const [activeTab, setActiveTab] = useState<"users" | "departments" | "roles" | "branches" | "logs">(
-    "users",
+  const searchParams = useSearchParams();
+  const initialTab = searchParams?.get("tab") as TabValue | null;
+  const [activeTab, setActiveTab] = useState<TabValue>(
+    initialTab && VALID_TABS.includes(initialTab) ? initialTab : "users",
   );
 
   return (

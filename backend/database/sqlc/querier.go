@@ -200,6 +200,8 @@ type Querier interface {
 	//   Limited     → default (owner + workflow_tasks involvement filter)
 	GetPaymentVoucherByID(ctx context.Context, arg GetPaymentVoucherByIDParams) (PaymentVoucher, error)
 	GetPaymentVoucherByNumber(ctx context.Context, arg GetPaymentVoucherByNumberParams) (PaymentVoucher, error)
+	GetProvinceByCode(ctx context.Context, arg GetProvinceByCodeParams) (Province, error)
+	GetProvinceByID(ctx context.Context, arg GetProvinceByIDParams) (Province, error)
 	// Purchase order read queries.
 	// Both CanViewAll and IsProcurement return all POs (ApplyToQuery passes through for both).
 	// Only two scope variants needed: All and Limited.
@@ -221,6 +223,7 @@ type Querier interface {
 	GetSessionsByUserID(ctx context.Context, arg GetSessionsByUserIDParams) ([]Session, error)
 	GetTaskByAssignment(ctx context.Context, arg GetTaskByAssignmentParams) (WorkflowTask, error)
 	GetTaskByID(ctx context.Context, arg GetTaskByIDParams) (WorkflowTask, error)
+	GetTownByID(ctx context.Context, arg GetTownByIDParams) (Town, error)
 	GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) (User, error)
 	// Enhanced user queries with security features
 	GetUserByID(ctx context.Context, arg GetUserByIDParams) (User, error)
@@ -272,6 +275,9 @@ type Querier interface {
 	ListPaymentVoucherIDsProcurement(ctx context.Context, arg ListPaymentVoucherIDsProcurementParams) ([]string, error)
 	ListPaymentVouchers(ctx context.Context, arg ListPaymentVouchersParams) ([]PaymentVoucher, error)
 	ListPaymentVouchersByVendor(ctx context.Context, arg ListPaymentVouchersByVendorParams) ([]PaymentVoucher, error)
+	// Provinces and towns queries
+	// Reference (lookup) tables; read-only for application code.
+	ListProvinces(ctx context.Context) ([]Province, error)
 	ListPurchaseOrderIDsAll(ctx context.Context, arg ListPurchaseOrderIDsAllParams) ([]string, error)
 	ListPurchaseOrderIDsLimited(ctx context.Context, arg ListPurchaseOrderIDsLimitedParams) ([]string, error)
 	ListPurchaseOrders(ctx context.Context, arg ListPurchaseOrdersParams) ([]PurchaseOrder, error)
@@ -285,6 +291,8 @@ type Querier interface {
 	ListSystemRoles(ctx context.Context) ([]OrganizationRole, error)
 	ListTasksByAssignee(ctx context.Context, arg ListTasksByAssigneeParams) ([]WorkflowTask, error)
 	ListTasksByEntity(ctx context.Context, arg ListTasksByEntityParams) ([]WorkflowTask, error)
+	ListTowns(ctx context.Context) ([]Town, error)
+	ListTownsByProvince(ctx context.Context, arg ListTownsByProvinceParams) ([]Town, error)
 	ListUnsentNotifications(ctx context.Context, arg ListUnsentNotificationsParams) ([]Notification, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	ListUsersByOrganization(ctx context.Context, arg ListUsersByOrganizationParams) ([]User, error)
