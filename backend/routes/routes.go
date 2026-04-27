@@ -20,10 +20,6 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 
 	// Auth routes with rate limiting
 	public.Post("/auth/login", middleware.AuthRateLimitMiddleware(), handlerRegistry.Auth.Login)
-	// Dedicated admin console auth endpoints — super_admin only
-	public.Post("/admin/auth/login", middleware.AuthRateLimitMiddleware(), handlerRegistry.Auth.AdminLogin)
-	public.Post("/admin/auth/logout", handlerRegistry.Auth.AdminLogout)
-	public.Post("/admin/auth/refresh", middleware.AuthRateLimitMiddleware(), handlerRegistry.Auth.AdminRefreshToken)
 	public.Post("/auth/register", middleware.AuthRateLimitMiddleware(), handlerRegistry.Auth.Register)
 	public.Post("/auth/verify", handlerRegistry.Auth.VerifyToken)
 	public.Post("/auth/refresh", middleware.AuthRateLimitMiddleware(), handlerRegistry.Auth.RefreshToken)
@@ -35,10 +31,6 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	// Public document verification (no authentication required)
 	public.Get("/public/verify/:documentNumber", handlerRegistry.Document.VerifyDocumentPublic)
 	public.Get("/public/verify/:documentNumber/document", handlerRegistry.Document.GetDocumentForPDFPublic)
-
-	// Public reference data — no auth required
-	public.Get("/provinces", handlers.GetProvinces)
-	public.Get("/towns", handlers.GetTowns)
 
 	// Activity logging middleware (async, non-blocking — attaches after auth)
 	var activityMiddleware fiber.Handler
@@ -138,9 +130,6 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	orgMgmt.Delete("/users/:id/sessions",
 		middleware.RequirePermission(rbacService, "organization", "manage"),
 		handlers.OrgTerminateAllUserSessions)
-	orgMgmt.Post("/users/:id/impersonate",
-		middleware.RequirePermission(rbacService, "organization", "manage"),
-		handlers.OrgImpersonateUser)
 
 	orgMgmt.Get("/usage", handlers.GetOrganizationUsage)
 
@@ -207,7 +196,6 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 		handlers.GetOrganizationRoles)
 	orgRoles.Post("/",
 		middleware.RequirePermission(rbacService, "organization", "manage"),
-		middleware.RequireFeature("custom_roles"),
 		middleware.CheckLimit("custom_role"),
 		handlers.CreateOrganizationRole)
 	orgRoles.Put("/:roleId",
@@ -361,12 +349,6 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	approvals.Post("/:id/reject", middleware.RequireWorkflowPermission("reject"), handlerRegistry.Approval.RejectTask)
 	approvals.Post("/:id/reassign", middleware.RequirePermission(rbacService, "approval", "reassign"), handlerRegistry.Approval.ReassignTask)
 
-	// Bulk approval operations (tenant-scoped) - ENABLED
-	bulk := approvals.Group("/bulk")
-	bulk.Post("/approve", middleware.RequireFeature("bulk_operations"), middleware.RequireWorkflowPermission("approve"), handlerRegistry.Approval.BulkApprove)
-	bulk.Post("/reject", middleware.RequireFeature("bulk_operations"), middleware.RequireWorkflowPermission("reject"), handlerRegistry.Approval.BulkReject)
-	bulk.Post("/reassign", middleware.RequireFeature("bulk_operations"), middleware.RequirePermission(rbacService, "approval", "reassign"), handlerRegistry.Approval.BulkReassign)
-
 	// Approval history routes (tenant-scoped) - Updated to use new handler
 	documents := tenant.Group("/documents", middleware.InjectWorkflowExecutionService(handlerRegistry.WorkflowExecutionService))
 	documents.Get("/:documentId/approval-history", handlerRegistry.Approval.GetApprovalHistory)
@@ -382,7 +364,6 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	genericDocs.Get("/number/:number", handlerRegistry.Document.GetDocumentByNumber)
 	genericDocs.Post("/", middleware.RequirePermission(rbacService, "document", "create"), handlerRegistry.Document.CreateDocument)
 	genericDocs.Put("/:id", middleware.RequirePermission(rbacService, "document", "edit"), handlerRegistry.Document.UpdateDocument)
-	genericDocs.Post("/generate", middleware.RequirePermission(rbacService, "document", "create"), middleware.RequireFeature("advanced_workflows"), handlerRegistry.Generation.GenerateDocument)
 	genericDocs.Post("/:id/submit", middleware.RequirePermission(rbacService, "document", "submit"), handlerRegistry.Document.SubmitDocument)
 	genericDocs.Delete("/:id", middleware.RequirePermission(rbacService, "document", "delete"), handlerRegistry.Document.DeleteDocument)
 
@@ -404,11 +385,9 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	workflows.Get("/:id/usage", middleware.RequirePermission(rbacService, "workflow", "view"), handlerRegistry.Workflow.GetWorkflowUsage)
 	workflows.Post("/validate", middleware.RequirePermission(rbacService, "workflow", "create"), handlerRegistry.Workflow.ValidateWorkflow)
 
-	// Analytics routes (tenant-scoped) - ENABLED
+	// Analytics routes (tenant-scoped)
 	analytics := tenant.Group("/analytics")
-	analytics.Get("/dashboard", handlers.GetDashboard) // Basic dashboard stats available to all tiers
-	analytics.Get("/requisitions/metrics", middleware.RequireFeature("advanced_analytics"), handlers.GetRequisitionMetrics)
-	analytics.Get("/approvals/metrics", middleware.RequireFeature("advanced_analytics"), handlers.GetApprovalMetrics)
+	analytics.Get("/dashboard", handlers.GetDashboard)
 
 	// Reports routes (tenant-scoped) - Unified reports for all users with role-based filtering
 	reports := tenant.Group("/reports")
@@ -431,219 +410,13 @@ func SetupRoutes(app *fiber.App, handlerRegistry *handlers.HandlerRegistry, rbac
 	notifications.Get("/preferences", handlerRegistry.Notification.GetNotificationPreferences)
 	notifications.Put("/preferences", handlerRegistry.Notification.UpdateNotificationPreferences)
 
-	// Audit Logs (tenant-scoped) - ENABLED
+	// Audit Logs (tenant-scoped)
 	audit := tenant.Group("/audit-logs")
-	audit.Get("/", middleware.RequirePermission(rbacService, "audit_log", "view"), middleware.RequireFeature("audit_logs_90_days"), handlers.GetAuditLogs)
-	audit.Get("/document/:documentId", middleware.RequirePermission(rbacService, "audit_log", "view"), middleware.RequireFeature("audit_logs_90_days"), handlers.GetDocumentAuditLogs)
+	audit.Get("/", middleware.RequirePermission(rbacService, "audit_log", "view"), handlers.GetAuditLogs)
+	audit.Get("/document/:documentId", middleware.RequirePermission(rbacService, "audit_log", "view"), handlers.GetDocumentAuditLogs)
 
 	// Audit Events — document activity log (entityType + entityId query params)
 	tenant.Get("/audit-events", handlers.GetDocumentAuditEvents)
-
-	// Admin-only routes (system-wide access)
-	admin := apiV1.Group("/admin", middleware.AuthMiddleware(), middleware.SuperAdminMiddleware())
-
-	// Admin dashboard and analytics
-	admin.Get("/dashboard", handlers.GetAdminDashboard)
-	admin.Get("/analytics", handlers.GetAdminAnalytics)
-	admin.Get("/system/health", handlers.GetSystemHealth)
-	admin.Get("/system/metrics", handlers.GetSystemMetrics)
-	admin.Get("/system/alerts", handlers.GetSystemAlerts)
-	admin.Get("/system/logs", handlers.GetSystemLogs)
-
-	// Admin analytics endpoints
-	admin.Get("/analytics/overview", handlers.GetAdminAnalytics)
-	admin.Get("/analytics/users", handlers.GetAdminUserAnalytics)
-	admin.Get("/analytics/organizations", handlers.GetAdminOrganizationAnalytics)
-	admin.Get("/analytics/revenue", handlers.GetAdminRevenueAnalytics)
-	admin.Get("/analytics/usage", handlers.GetAdminUsageAnalytics)
-	admin.Post("/analytics/export", handlers.ExportAdminAnalytics)
-	admin.Post("/analytics/custom", handlers.RunCustomAdminAnalytics)
-	admin.Get("/analytics/dashboard/config", handlers.GetAdminAnalyticsDashboardConfig)
-	admin.Put("/analytics/dashboard/config", handlers.UpdateAdminAnalyticsDashboardConfig)
-
-	// Admin settings management
-	admin.Get("/settings", handlers.GetSystemSettings)
-	admin.Get("/settings/:id", handlers.GetSystemSetting)
-	admin.Post("/settings", handlers.CreateSystemSetting)
-	admin.Put("/settings/:id", handlers.UpdateSystemSetting)
-	admin.Delete("/settings/:id", handlers.DeleteSystemSetting)
-	admin.Get("/settings/stats", handlers.GetSettingsStats)
-	admin.Get("/settings/health", handlers.GetSystemHealthStatus)
-
-	// Admin environment variables
-	admin.Get("/environment-variables", handlers.GetEnvironmentVariables)
-
-	// Admin feature flags management
-	admin.Get("/feature-flags", handlers.GetFeatureFlags)
-	admin.Get("/feature-flags/:id", handlers.GetFeatureFlag)
-	admin.Post("/feature-flags", handlers.CreateFeatureFlag)
-	admin.Put("/feature-flags/:id", handlers.UpdateFeatureFlag)
-	admin.Delete("/feature-flags/:id", handlers.DeleteFeatureFlag)
-	admin.Post("/feature-flags/:id/toggle", handlers.ToggleFeatureFlag)
-	admin.Post("/feature-flags/:id/archive", handlers.ArchiveFeatureFlag)
-	admin.Get("/feature-flags/stats", handlers.GetFeatureFlagStats)
-
-	// Feature flag evaluation
-	admin.Post("/feature-flags/:key/evaluate", handlers.EvaluateFeatureFlag)
-	admin.Get("/feature-flags/:key/analytics", handlers.GetFeatureFlagAnalytics)
-
-	// ===== Admin User Management =====
-	adminUsers := admin.Group("/users")
-	adminUsers.Get("/statistics", handlers.AdminGetUserStatistics) // Static routes before :id
-	adminUsers.Get("/", handlers.AdminGetAllUsers)
-	adminUsers.Get("/:id", handlers.AdminGetUserById)
-	adminUsers.Put("/:id", handlers.AdminUpdateUser)
-	adminUsers.Put("/:id/status", handlers.AdminUpdateUserStatus)
-	adminUsers.Get("/:id/activity", handlers.AdminGetUserActivity)
-	adminUsers.Post("/:id/activity/export", handlers.AdminExportUserActivity)
-	adminUsers.Get("/:id/security-events", handlers.AdminGetUserSecurityEvents)
-	adminUsers.Get("/:id/login-history", handlers.AdminGetUserLoginHistory)
-	adminUsers.Get("/:id/work-stats", handlers.AdminGetUserWorkStats)
-	adminUsers.Get("/:id/sessions", handlers.AdminGetUserSessions)
-	adminUsers.Delete("/:id/sessions/:sessionId", handlers.AdminTerminateUserSession)
-	adminUsers.Delete("/:id/sessions", handlers.AdminTerminateAllUserSessions)
-	adminUsers.Post("/:id/reset-password", handlers.AdminResetUserPassword)
-	adminUsers.Post("/:id/impersonate", handlers.AdminImpersonateUser)
-	adminUsers.Get("/:id/organizations", handlers.AdminGetUserOrganizations)
-	adminUsers.Put("/:id/organizations/:orgId", handlers.AdminUpdateUserOrgRole)
-	adminUsers.Delete("/:id/organizations/:orgId", handlers.AdminRemoveUserFromOrg)
-
-	// ===== Admin Organization Management =====
-	adminOrgs := admin.Group("/organizations")
-	adminOrgs.Get("/statistics", handlers.AdminGetOrganizationStatistics) // Static routes before :id
-	adminOrgs.Get("/", handlers.AdminGetAllOrganizations)
-	adminOrgs.Post("/", handlers.AdminCreateOrganization)
-	adminOrgs.Get("/:id", handlers.AdminGetOrganizationById)
-	adminOrgs.Put("/:id", handlers.AdminUpdateOrganization)
-	adminOrgs.Delete("/:id", handlers.AdminDeleteOrganization)
-	adminOrgs.Put("/:id/status", handlers.AdminUpdateOrganizationStatus)
-	adminOrgs.Get("/:id/users", handlers.AdminGetOrganizationUsers)
-	adminOrgs.Get("/:id/activity", handlers.AdminGetOrganizationActivity)
-	adminOrgs.Get("/:id/trial/status", handlers.AdminGetOrgTrialStatus)
-	adminOrgs.Get("/:id/subscription", handlers.AdminGetOrgSubscription)
-	adminOrgs.Post("/:id/trial/reset", handlers.AdminResetOrganizationTrial)
-	adminOrgs.Post("/:id/trial/extend", handlers.AdminExtendOrganizationTrial)
-
-	// ===== Admin Roles & Permissions =====
-	adminRoles := admin.Group("/roles")
-	adminRoles.Get("/stats", handlers.AdminGetRoleStats) // Static routes before :id
-	adminRoles.Post("/export", handlers.AdminExportRoles)
-	adminRoles.Post("/bulk-update", handlers.AdminBulkUpdateRoles)
-	adminRoles.Get("/", handlers.AdminGetAllRoles)
-	adminRoles.Post("/", handlers.AdminCreateRole)
-	adminRoles.Get("/:id", handlers.AdminGetRoleById)
-	adminRoles.Put("/:id", handlers.AdminUpdateRole)
-	adminRoles.Delete("/:id", handlers.AdminDeleteRole)
-	adminRoles.Get("/:id/users", handlers.AdminGetRoleUsers)
-	adminRoles.Post("/:id/assign", handlers.AdminAssignRoleToUsers)
-	adminRoles.Post("/:id/remove", handlers.AdminRemoveRoleFromUsers)
-	adminRoles.Post("/:id/clone", handlers.AdminCloneRole)
-	adminRoles.Get("/:id/audit", handlers.AdminGetRoleAuditHistory)
-
-	adminPerms := admin.Group("/permissions")
-	adminPerms.Get("/", handlers.AdminGetAllPermissions)
-	adminPerms.Get("/by-category", handlers.AdminGetPermissionsByCategory)
-
-	// ===== Admin Console Users (admin-level users) =====
-	adminAdminUsers := admin.Group("/admin-users")
-	adminAdminUsers.Get("/stats", handlers.AdminGetAdminUserStats) // Static routes before :id
-	adminAdminUsers.Post("/export", handlers.AdminExportAdminUsers)
-	adminAdminUsers.Post("/bulk-update", handlers.AdminBulkUpdateAdminUsers)
-	adminAdminUsers.Get("/", handlers.AdminGetAdminUsers)
-	adminAdminUsers.Post("/", handlers.AdminCreateAdminUser)
-	adminAdminUsers.Get("/:id", handlers.AdminGetAdminUser)
-	adminAdminUsers.Put("/:id", handlers.AdminUpdateAdminUser)
-	adminAdminUsers.Delete("/:id", handlers.AdminDeleteAdminUser)
-	adminAdminUsers.Post("/:id/activate", handlers.AdminActivateAdminUser)
-	adminAdminUsers.Post("/:id/deactivate", handlers.AdminDeactivateAdminUser)
-	adminAdminUsers.Post("/:id/unlock", handlers.AdminUnlockAdminUser)
-	adminAdminUsers.Post("/:id/reset-password", handlers.AdminResetAdminPassword)
-	adminAdminUsers.Post("/:id/two-factor", handlers.AdminToggleTwoFactor)
-	adminAdminUsers.Get("/:id/activity", handlers.AdminGetAdminUserActivity)
-	adminAdminUsers.Get("/:id/sessions", handlers.AdminGetAdminUserSessions)
-	adminAdminUsers.Post("/:id/sessions/:sessionId/terminate", handlers.AdminTerminateAdminSession)
-	adminAdminUsers.Post("/:id/sessions/terminate-all", handlers.AdminTerminateAllAdminSessions)
-	adminAdminUsers.Post("/:id/impersonate", handlers.AdminImpersonateAdminUser)
-	adminAdminUsers.Post("/:id/promote", handlers.AdminPromoteToSuperAdmin)
-	adminAdminUsers.Post("/:id/demote", handlers.AdminDemoteFromSuperAdmin)
-
-	// ===== Admin Impersonation Logs =====
-	adminImpersonation := admin.Group("/impersonation")
-	adminImpersonation.Get("/stats", handlers.GetImpersonationStats)
-	adminImpersonation.Get("/logs", handlers.GetImpersonationLogs)
-	adminImpersonation.Get("/logs/:id", handlers.GetImpersonationLog)
-	adminImpersonation.Post("/logs/:id/revoke", handlers.RevokeImpersonationLog)
-
-	// ===== Admin Reports & Analytics =====
-	adminReports := admin.Group("/reports")
-	adminReports.Get("/system-stats", handlerRegistry.Reports.GetSystemStatistics)
-	adminReports.Get("/approval-metrics", handlerRegistry.Reports.GetApprovalMetrics)
-	adminReports.Get("/user-activity", handlerRegistry.Reports.GetUserActivityMetrics)
-	adminReports.Get("/analytics", handlerRegistry.Reports.GetAnalyticsDashboard)
-
-	// ===== Admin Audit Logs =====
-	adminAuditLogs := admin.Group("/audit-logs")
-	adminAuditLogs.Get("/stats", handlers.GetAdminAuditLogStats)
-	adminAuditLogs.Get("/analytics", handlers.GetAdminAuditLogAnalytics)
-	adminAuditLogs.Get("/security-events", handlers.GetAdminAuditLogSecurityEvents)
-	adminAuditLogs.Get("/retention-settings", handlers.GetAdminAuditLogRetentionSettings)
-	adminAuditLogs.Put("/retention-settings", handlers.UpdateAdminAuditLogRetentionSettings)
-	adminAuditLogs.Post("/export", handlers.ExportAdminAuditLogs)
-	adminAuditLogs.Get("/", handlers.GetAdminAuditLogs)
-	adminAuditLogs.Post("/", handlers.CreateAdminAuditLog)
-	adminAuditLogs.Get("/:id", handlers.GetAdminAuditLogByID)
-
-	// ===== Admin Database Management =====
-	adminDB := admin.Group("/database")
-	adminDB.Get("/stats", handlers.GetDatabaseStats)
-	adminDB.Get("/connections", handlers.GetDatabaseConnections)
-	adminDB.Get("/metrics", handlers.GetDatabaseMetrics)
-	adminDB.Get("/queries", handlers.GetRunningQueries)
-	adminDB.Get("/backups", handlers.GetDatabaseBackups)
-	adminDB.Get("/connections/:id", handlers.GetDatabaseConnection)
-	adminDB.Post("/connections/:id/test", handlers.TestDatabaseConnection)
-	adminDB.Get("/connections/:id/tables", handlers.GetDatabaseTables)
-	adminDB.Post("/connections/:id/execute", handlers.ExecuteDatabaseQuery)
-	adminDB.Post("/connections/:id/backup", handlers.CreateDatabaseBackup)
-	adminDB.Get("/connections/:id/migrations", handlers.GetDatabaseMigrations)
-	adminDB.Post("/connections/:id/migrations/:migrationId/run", handlers.RunDatabaseMigration)
-	adminDB.Post("/connections/:id/migrations/:migrationId/rollback", handlers.RollbackDatabaseMigration)
-	adminDB.Post("/connections/:id/tables/:tableName/optimize", handlers.OptimizeDatabaseTable)
-	adminDB.Post("/connections/:id/export", handlers.ExportDatabase)
-	adminDB.Get("/connections/:id/schemas", handlers.GetDatabaseSchemas)
-	adminDB.Get("/connections/:id/performance", handlers.GetDatabasePerformance)
-	adminDB.Post("/queries/:id/cancel", handlers.CancelDatabaseQuery)
-	adminDB.Post("/backups/:id/restore", handlers.RestoreDatabaseBackup)
-
-	// API Monitoring routes removed
-
-	// ===== Additional System Health Endpoints =====
-	admin.Post("/system/alerts/:id/acknowledge", handlers.AcknowledgeSystemAlert)
-	admin.Post("/system/alerts/:id/resolve", handlers.ResolveSystemAlert)
-	admin.Get("/system/performance", handlers.GetPerformanceMetrics)
-	admin.Post("/system/health/check", handlers.RunSystemHealthCheck)
-	admin.Get("/system/config", handlers.GetSystemConfig)
-	admin.Put("/system/config", handlers.UpdateSystemConfig)
-	admin.Post("/system/services/:name/restart", handlers.RestartSystemService)
-	admin.Post("/system/cache/clear", handlers.ClearSystemCache)
-
-	// ===== Admin Notifications =====
-	adminNotifications := admin.Group("/notifications")
-	adminNotifications.Get("/stats", handlers.GetAdminNotificationStats)
-	adminNotifications.Get("/", handlers.GetAdminNotifications)
-	adminNotifications.Post("/", handlers.CreateAdminNotification)
-	adminNotifications.Post("/bulk-delete", handlers.BulkDeleteAdminNotifications)
-	adminNotifications.Delete("/:id", handlers.DeleteAdminNotification)
-	adminNotifications.Post("/:id/read", handlers.MarkAdminNotificationRead)
-
-	// ===== Admin Support (platform-wide document & workflow visibility) =====
-	adminSupport := admin.Group("/support")
-	adminSupport.Get("/documents", handlers.AdminGetSupportDocuments)
-	adminSupport.Get("/documents/:id", handlers.AdminGetSupportDocument)
-	adminSupport.Get("/workflow-tasks", handlers.AdminGetSupportWorkflowTasks)
-	adminSupport.Get("/workflow-tasks/:id", handlers.AdminGetSupportWorkflowTask)
-	adminSupport.Post("/workflow-tasks/:id/reassign", handlers.AdminReassignWorkflowTask)
-	adminSupport.Post("/workflow-tasks/:id/reset", handlers.AdminResetWorkflowTask)
 
 	// Note: Development tools and test workflow tasks are now created via seed data migrations
 }

@@ -117,7 +117,6 @@ func main() {
 
 	// Initialize automation service
 	automationService := services.NewDocumentAutomationService(auditService, notificationService)
-	documentGenerationService := services.NewDocumentGenerationService(automationService)
 
 	// Initialize workflow execution service with automation
 	workflowExecutionService := services.NewWorkflowExecutionService(workflowService, auditService, automationService)
@@ -151,7 +150,6 @@ func main() {
 		workflowService,
 		workflowExecutionService,
 		documentService,
-		documentGenerationService,
 		reportsService,
 		logger,
 	)

@@ -7,13 +7,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev:web": "pnpm --filter tether-erp-frontend dev",
-    "dev:admin": "pnpm --filter tether-erp-procurement dev",
+    "dev": "pnpm --filter tether-erp-frontend dev",
     "build": "pnpm -r run build",
     "build:web": "pnpm --filter tether-erp-frontend build",
-    "build:admin": "pnpm --filter tether-erp-procurement build",
-    "start:web": "pnpm --filter tether-erp-frontend start",
-    "start:admin": "pnpm --filter tether-erp-procurement start",
+    "start": "pnpm --filter tether-erp-frontend start",
     "lint": "pnpm -r run lint",
     "test": "pnpm -r run test",
     "clean": "pnpm -r exec rm -rf node_modules .next && rm -rf node_modules"

@@ -183,21 +183,6 @@ type GoodsReceivedNote struct {
 }
 
 // Impersonation events for audit/security — visible to super_admin only
-type ImpersonationLog struct {
-	ID                string             `json:"id"`
-	ImpersonatorID    string             `json:"impersonatorId"`
-	ImpersonatorEmail string             `json:"impersonatorEmail"`
-	TargetID          string             `json:"targetId"`
-	TargetEmail       string             `json:"targetEmail"`
-	ImpersonationType string             `json:"impersonationType"`
-	TokenJti          string             `json:"tokenJti"`
-	Reason            *string            `json:"reason"`
-	ExpiresAt         pgtype.Timestamptz `json:"expiresAt"`
-	Revoked           bool               `json:"revoked"`
-	RevokedAt         pgtype.Timestamptz `json:"revokedAt"`
-	RevokedBy         *string            `json:"revokedBy"`
-	CreatedAt         pgtype.Timestamptz `json:"createdAt"`
-}
 
 type LoginAttempt struct {
 	ID            pgtype.UUID        `json:"id"`
@@ -400,12 +385,6 @@ type PaymentVoucher struct {
 	LinkedGrn                 *string            `json:"linkedGrn"`
 }
 
-type Province struct {
-	ID   pgtype.UUID `json:"id"`
-	Name string      `json:"name"`
-	Code string      `json:"code"`
-}
-
 type PurchaseOrder struct {
 	ID                      string             `json:"id"`
 	OrganizationID          string             `json:"organizationId"`
@@ -541,13 +520,6 @@ type TaskAssignmentHistory struct {
 	Role           string             `json:"role"`
 	AssignedUserID string             `json:"assignedUserId"`
 	AssignedAt     pgtype.Timestamptz `json:"assignedAt"`
-}
-
-type Town struct {
-	ID         pgtype.UUID `json:"id"`
-	ProvinceID pgtype.UUID `json:"provinceId"`
-	Name       string      `json:"name"`
-	Code       *string     `json:"code"`
 }
 
 type User struct {

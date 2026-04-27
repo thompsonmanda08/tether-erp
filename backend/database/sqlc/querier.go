@@ -41,7 +41,6 @@ type Querier interface {
 	CountGRNsAll(ctx context.Context, arg CountGRNsAllParams) (int64, error)
 	CountGRNsByPO(ctx context.Context, arg CountGRNsByPOParams) (int64, error)
 	CountGRNsLimited(ctx context.Context, arg CountGRNsLimitedParams) (int64, error)
-	CountImpersonationLogs(ctx context.Context, arg CountImpersonationLogsParams) (int64, error)
 	CountMembers(ctx context.Context, arg CountMembersParams) (int64, error)
 	CountNotifications(ctx context.Context, arg CountNotificationsParams) (int64, error)
 	CountOrganizationRoles(ctx context.Context, arg CountOrganizationRolesParams) (int64, error)
@@ -92,9 +91,6 @@ type Querier interface {
 	CreateDepartment(ctx context.Context, arg CreateDepartmentParams) (OrganizationDepartment, error)
 	CreateDocument(ctx context.Context, arg CreateDocumentParams) (Document, error)
 	CreateGRN(ctx context.Context, arg CreateGRNParams) (GoodsReceivedNote, error)
-	// Impersonation log queries
-	// Tracks platform/admin user impersonation events. id is TEXT not UUID.
-	CreateImpersonationLog(ctx context.Context, arg CreateImpersonationLogParams) (ImpersonationLog, error)
 	CreateLoginAttempt(ctx context.Context, arg CreateLoginAttemptParams) (LoginAttempt, error)
 	// Notification queries
 	// User-scoped notification CRUD operations and bulk-update helpers.
@@ -169,8 +165,6 @@ type Querier interface {
 	// Both CanViewAll and IsProcurement use the unfiltered path (ApplyToQuery passes through).
 	// Limited adds owner (created_by OR received_by) + workflow_tasks involvement.
 	GetGRNByID(ctx context.Context, arg GetGRNByIDParams) (GoodsReceivedNote, error)
-	GetImpersonationLogByID(ctx context.Context, arg GetImpersonationLogByIDParams) (ImpersonationLog, error)
-	GetImpersonationLogByJTI(ctx context.Context, arg GetImpersonationLogByJTIParams) (ImpersonationLog, error)
 	GetLinkedGRNByPONumber(ctx context.Context, arg GetLinkedGRNByPONumberParams) (GoodsReceivedNote, error)
 	// Documents extra: cross-document link lookups
 	// Used to fetch the related typed-document for a given document number/id.
@@ -206,8 +200,6 @@ type Querier interface {
 	//   Limited     → default (owner + workflow_tasks involvement filter)
 	GetPaymentVoucherByID(ctx context.Context, arg GetPaymentVoucherByIDParams) (PaymentVoucher, error)
 	GetPaymentVoucherByNumber(ctx context.Context, arg GetPaymentVoucherByNumberParams) (PaymentVoucher, error)
-	GetProvinceByCode(ctx context.Context, arg GetProvinceByCodeParams) (Province, error)
-	GetProvinceByID(ctx context.Context, arg GetProvinceByIDParams) (Province, error)
 	// Purchase order read queries.
 	// Both CanViewAll and IsProcurement return all POs (ApplyToQuery passes through for both).
 	// Only two scope variants needed: All and Limited.
@@ -229,7 +221,6 @@ type Querier interface {
 	GetSessionsByUserID(ctx context.Context, arg GetSessionsByUserIDParams) ([]Session, error)
 	GetTaskByAssignment(ctx context.Context, arg GetTaskByAssignmentParams) (WorkflowTask, error)
 	GetTaskByID(ctx context.Context, arg GetTaskByIDParams) (WorkflowTask, error)
-	GetTownByID(ctx context.Context, arg GetTownByIDParams) (Town, error)
 	GetUserByEmail(ctx context.Context, arg GetUserByEmailParams) (User, error)
 	// Enhanced user queries with security features
 	GetUserByID(ctx context.Context, arg GetUserByIDParams) (User, error)
@@ -247,7 +238,6 @@ type Querier interface {
 	ListActiveBranches(ctx context.Context, arg ListActiveBranchesParams) ([]OrganizationBranch, error)
 	ListActiveCategories(ctx context.Context, arg ListActiveCategoriesParams) ([]Category, error)
 	ListActiveDepartments(ctx context.Context, arg ListActiveDepartmentsParams) ([]OrganizationDepartment, error)
-	ListActiveImpersonations(ctx context.Context) ([]ImpersonationLog, error)
 	ListActiveVendors(ctx context.Context, arg ListActiveVendorsParams) ([]Vendor, error)
 	ListActiveWorkflows(ctx context.Context, arg ListActiveWorkflowsParams) ([]Workflow, error)
 	ListActiveWorkflowsByDocumentType(ctx context.Context, arg ListActiveWorkflowsByDocumentTypeParams) ([]Workflow, error)
@@ -272,7 +262,6 @@ type Querier interface {
 	ListGRNIDsLimited(ctx context.Context, arg ListGRNIDsLimitedParams) ([]string, error)
 	ListGRNs(ctx context.Context, arg ListGRNsParams) ([]GoodsReceivedNote, error)
 	ListGRNsByPO(ctx context.Context, arg ListGRNsByPOParams) ([]GoodsReceivedNote, error)
-	ListImpersonationLogs(ctx context.Context, arg ListImpersonationLogsParams) ([]ImpersonationLog, error)
 	ListMembers(ctx context.Context, arg ListMembersParams) ([]OrganizationMember, error)
 	ListNotifications(ctx context.Context, arg ListNotificationsParams) ([]Notification, error)
 	ListOrganizationRoles(ctx context.Context, arg ListOrganizationRolesParams) ([]OrganizationRole, error)
@@ -283,9 +272,6 @@ type Querier interface {
 	ListPaymentVoucherIDsProcurement(ctx context.Context, arg ListPaymentVoucherIDsProcurementParams) ([]string, error)
 	ListPaymentVouchers(ctx context.Context, arg ListPaymentVouchersParams) ([]PaymentVoucher, error)
 	ListPaymentVouchersByVendor(ctx context.Context, arg ListPaymentVouchersByVendorParams) ([]PaymentVoucher, error)
-	// Provinces and towns queries
-	// Reference (lookup) tables; read-only for application code.
-	ListProvinces(ctx context.Context) ([]Province, error)
 	ListPurchaseOrderIDsAll(ctx context.Context, arg ListPurchaseOrderIDsAllParams) ([]string, error)
 	ListPurchaseOrderIDsLimited(ctx context.Context, arg ListPurchaseOrderIDsLimitedParams) ([]string, error)
 	ListPurchaseOrders(ctx context.Context, arg ListPurchaseOrdersParams) ([]PurchaseOrder, error)
@@ -299,8 +285,6 @@ type Querier interface {
 	ListSystemRoles(ctx context.Context) ([]OrganizationRole, error)
 	ListTasksByAssignee(ctx context.Context, arg ListTasksByAssigneeParams) ([]WorkflowTask, error)
 	ListTasksByEntity(ctx context.Context, arg ListTasksByEntityParams) ([]WorkflowTask, error)
-	ListTowns(ctx context.Context) ([]Town, error)
-	ListTownsByProvince(ctx context.Context, arg ListTownsByProvinceParams) ([]Town, error)
 	ListUnsentNotifications(ctx context.Context, arg ListUnsentNotificationsParams) ([]Notification, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	ListUsersByOrganization(ctx context.Context, arg ListUsersByOrganizationParams) ([]User, error)
@@ -321,7 +305,6 @@ type Querier interface {
 	RemoveMemberByUserOrg(ctx context.Context, arg RemoveMemberByUserOrgParams) error
 	RemoveUserRole(ctx context.Context, arg RemoveUserRoleParams) error
 	ReserveBudget(ctx context.Context, arg ReserveBudgetParams) (Budget, error)
-	RevokeImpersonationLog(ctx context.Context, arg RevokeImpersonationLogParams) error
 	SoftDeleteBudget(ctx context.Context, arg SoftDeleteBudgetParams) error
 	SoftDeleteCategory(ctx context.Context, arg SoftDeleteCategoryParams) error
 	SoftDeleteDocument(ctx context.Context, arg SoftDeleteDocumentParams) error

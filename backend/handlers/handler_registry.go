@@ -11,7 +11,6 @@ type HandlerRegistry struct {
 	Approval                 *ApprovalHandler
 	Workflow                 *WorkflowHandler
 	Document                 *DocumentHandler
-	Generation               *DocumentGenerationHandler
 	Notification             *NotificationHandler
 	Reports                  *ReportsHandler
 	WorkflowExecutionService *services.WorkflowExecutionService
@@ -24,7 +23,6 @@ func NewHandlerRegistry(
 	workflowService *services.WorkflowService,
 	workflowExecutionService *services.WorkflowExecutionService,
 	documentService *services.DocumentService,
-	documentGenerationService *services.DocumentGenerationService,
 	reportsService *services.ReportsService,
 	logger *logging.Logger,
 ) *HandlerRegistry {
@@ -33,7 +31,6 @@ func NewHandlerRegistry(
 		Approval:                 NewApprovalHandler(),
 		Workflow:                 NewWorkflowHandler(workflowService),
 		Document:                 NewDocumentHandler(documentService),
-		Generation:               NewDocumentGenerationHandler(documentGenerationService),
 		Notification:             NewNotificationHandler(),
 		Reports:                  NewReportsHandler(reportsService),
 		WorkflowExecutionService: workflowExecutionService,

@@ -19,6 +19,54 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func parseDeviceHint(ua string) string {
+	ua = strings.ToLower(ua)
+	switch {
+	case strings.Contains(ua, "mobile"):
+		return "Mobile"
+	case strings.Contains(ua, "tablet"):
+		return "Tablet"
+	case ua == "":
+		return "Unknown"
+	default:
+		return "Desktop"
+	}
+}
+
+func parseBrowserHint(ua string) string {
+	ua = strings.ToLower(ua)
+	switch {
+	case strings.Contains(ua, "edg/"):
+		return "Edge"
+	case strings.Contains(ua, "chrome"):
+		return "Chrome"
+	case strings.Contains(ua, "firefox"):
+		return "Firefox"
+	case strings.Contains(ua, "safari"):
+		return "Safari"
+	default:
+		return "Unknown"
+	}
+}
+
+func parseOSHint(ua string) string {
+	ua = strings.ToLower(ua)
+	switch {
+	case strings.Contains(ua, "windows"):
+		return "Windows"
+	case strings.Contains(ua, "mac os") || strings.Contains(ua, "macintosh"):
+		return "macOS"
+	case strings.Contains(ua, "linux"):
+		return "Linux"
+	case strings.Contains(ua, "android"):
+		return "Android"
+	case strings.Contains(ua, "iphone") || strings.Contains(ua, "ipad"):
+		return "iOS"
+	default:
+		return "Unknown"
+	}
+}
+
 // orgMemberGuard verifies that userID is an active member of the caller's organization.
 // Returns a non-nil error response if the check fails; callers should return that value immediately.
 func orgMemberGuard(c *fiber.Ctx, orgID, userID string) error {
