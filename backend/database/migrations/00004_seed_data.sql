@@ -9,7 +9,7 @@
 -- ============================================================================
 INSERT INTO organizations (id, name, slug, description, active, created_at, updated_at)
 VALUES
-    ('org-demo-001',       'Tether-ERP Demo Organization', 'tether-erp-demo',  'Default organization for testing and development',                  true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('org-demo-001',       'BGS Group',                    'bgs-group',         'BGS Group — primary demo organization for Tether-ERP',               true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     ('org-enterprise-001', 'Enterprise Corp',              'enterprise-corp',   'Large enterprise organization for testing enterprise features',      true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
@@ -18,20 +18,20 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================================
 INSERT INTO users (id, email, name, password, role, active, current_organization_id, is_super_admin, must_change_password, created_at, updated_at)
 VALUES
-    ('user-super-admin-001', 'superadmin@tether-erp.com',  'Super Admin',         '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin', true, NULL,           true,  false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('user-admin-001',       'admin@tether-erp.com',       'System Administrator','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin',       true, 'org-demo-001', true,  false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('user-requester-001',   'requester@tether-erp.com',   'John Requester',      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'requester',   true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('user-approver-001',    'approver@tether-erp.com',    'Jane Approver',       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'approver',    true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('user-finance-001',     'finance@tether-erp.com',     'Bob Finance',         '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'finance',     true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('user-manager-001',     'manager@tether-erp.com',     'Alice Manager',       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'approver',    true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('user-viewer-001',      'viewer@tether-erp.com',      'Charlie Viewer',      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'viewer',      true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('user-super-admin-001', 'superadmin@bgsgroup.co.zm',  'Super Admin',         '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin', true, 'org-demo-001', true,  false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user-admin-001',       'admin@bgsgroup.co.zm',       'System Administrator','$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin',       true, 'org-demo-001', true,  false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user-requester-001',   'requester@bgsgroup.co.zm',   'John Requester',      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'requester',   true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user-approver-001',    'approver@bgsgroup.co.zm',    'Jane Approver',       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'approver',    true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user-finance-001',     'finance@bgsgroup.co.zm',     'Bob Finance',         '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'finance',     true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user-manager-001',     'manager@bgsgroup.co.zm',     'Alice Manager',       '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'approver',    true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('user-viewer-001',      'viewer@bgsgroup.co.zm',      'Charlie Viewer',      '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'viewer',      true, 'org-demo-001', false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- ORGANIZATION SETTINGS
 -- ============================================================================
 INSERT INTO organization_settings (id, organization_id, require_digital_signatures, currency, fiscal_year_start, enable_budget_validation, budget_variance_threshold, created_at, updated_at)
-VALUES ('settings-001', 'org-demo-001', true, 'USD', 1, true, 5.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+VALUES ('settings-001', 'org-demo-001', true, 'ZMW', 1, true, 5.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
@@ -51,6 +51,7 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================================
 INSERT INTO organization_members (id, organization_id, user_id, role, department, department_id, active, joined_at, created_at, updated_at)
 VALUES
+    ('member-000', 'org-demo-001', 'user-super-admin-001','admin',    'IT',         'dept-001', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     ('member-001', 'org-demo-001', 'user-admin-001',     'admin',     'IT',         'dept-001', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     ('member-002', 'org-demo-001', 'user-requester-001', 'requester', 'Operations', 'dept-003', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     ('member-003', 'org-demo-001', 'user-approver-001',  'approver',  'Finance',    'dept-002', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -171,10 +172,10 @@ ON CONFLICT (organization_id, entity_type) DO UPDATE SET
 -- ============================================================================
 INSERT INTO budgets (id, organization_id, owner_id, budget_code, name, description, total_budget, allocated_amount, remaining_amount, currency, fiscal_year, status, created_by, created_at, updated_at)
 VALUES
-    ('budget-it-001',  'org-demo-001', 'user-admin-001', 'IT-EQUIP',  'IT Equipment Budget 2026',          'Annual budget for IT equipment purchases',              50000.00, 0.00, 50000.00, 'USD', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('budget-it-002',  'org-demo-001', 'user-admin-001', 'IT-SOFT',   'IT Software Budget 2026',            'Annual budget for software licenses and subscriptions', 25000.00, 0.00, 25000.00, 'USD', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('budget-ops-001', 'org-demo-001', 'user-admin-001', 'OFFICE-SUP','Operations Supplies Budget 2026',   'Annual budget for operational supplies',                15000.00, 0.00, 15000.00, 'USD', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('budget-hr-001',  'org-demo-001', 'user-admin-001', 'HR-TRAIN',  'HR Training Budget 2026',            'Annual budget for employee training and development',   20000.00, 0.00, 20000.00, 'USD', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('budget-it-001',  'org-demo-001', 'user-admin-001', 'IT-EQUIP',  'IT Equipment Budget 2026',          'Annual budget for IT equipment purchases',              50000.00, 0.00, 50000.00, 'ZMW', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('budget-it-002',  'org-demo-001', 'user-admin-001', 'IT-SOFT',   'IT Software Budget 2026',            'Annual budget for software licenses and subscriptions', 25000.00, 0.00, 25000.00, 'ZMW', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('budget-ops-001', 'org-demo-001', 'user-admin-001', 'OFFICE-SUP','Operations Supplies Budget 2026',   'Annual budget for operational supplies',                15000.00, 0.00, 15000.00, 'ZMW', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('budget-hr-001',  'org-demo-001', 'user-admin-001', 'HR-TRAIN',  'HR Training Budget 2026',            'Annual budget for employee training and development',   20000.00, 0.00, 20000.00, 'ZMW', '2026', 'active', 'user-admin-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
@@ -182,11 +183,11 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================================
 INSERT INTO requisitions (id, organization_id, document_number, requester_id, title, description, department, total_amount, currency, status, priority, category_id, created_at, updated_at)
 VALUES
-    ('req-001', 'org-demo-001', 'REQ-260111-001', 'user-requester-001', 'New Laptop for Development Team',  'Request for high-performance laptop for software development', 'IT',         2500.00, 'USD', 'draft',     'medium', 'cat-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('req-002', 'org-demo-001', 'REQ-260111-002', 'user-requester-001', 'Office Supplies Replenishment',    'Monthly office supplies replenishment',                       'Operations',  500.00, 'USD', 'draft',     'low',    'cat-003', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('req-003', 'org-demo-001', 'REQ-260111-003', 'user-requester-001', 'Software License Renewal',         'Annual renewal of development software licenses',             'IT',         5000.00, 'USD', 'submitted', 'high',   'cat-002', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('req-004', 'org-demo-001', 'REQ-260111-004', 'user-requester-001', 'Training Course Registration',     'Professional development course for team members',            'HR',         1200.00, 'USD', 'submitted', 'medium', 'cat-004', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('req-005', 'org-demo-001', 'REQ-260111-005', 'user-requester-001', 'Facility Maintenance Contract',    'Annual facility maintenance and cleaning services',           'Operations', 8000.00, 'USD', 'submitted', 'high',   'cat-006', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('req-001', 'org-demo-001', 'REQ-260111-001', 'user-requester-001', 'New Laptop for Development Team',  'Request for high-performance laptop for software development', 'IT',         2500.00, 'ZMW', 'draft',     'medium', 'cat-001', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('req-002', 'org-demo-001', 'REQ-260111-002', 'user-requester-001', 'Office Supplies Replenishment',    'Monthly office supplies replenishment',                       'Operations',  500.00, 'ZMW', 'draft',     'low',    'cat-003', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('req-003', 'org-demo-001', 'REQ-260111-003', 'user-requester-001', 'Software License Renewal',         'Annual renewal of development software licenses',             'IT',         5000.00, 'ZMW', 'submitted', 'high',   'cat-002', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('req-004', 'org-demo-001', 'REQ-260111-004', 'user-requester-001', 'Training Course Registration',     'Professional development course for team members',            'HR',         1200.00, 'ZMW', 'submitted', 'medium', 'cat-004', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('req-005', 'org-demo-001', 'REQ-260111-005', 'user-requester-001', 'Facility Maintenance Contract',    'Annual facility maintenance and cleaning services',           'Operations', 8000.00, 'ZMW', 'submitted', 'high',   'cat-006', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
@@ -194,8 +195,8 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================================
 INSERT INTO purchase_orders (id, organization_id, document_number, created_by, vendor_id, title, description, total_amount, currency, status, priority, created_at, updated_at)
 VALUES
-    ('po-001', 'org-demo-001', 'PO-260111-001', 'user-requester-001', 'vendor-002', 'Laptop Purchase Order',     'Purchase order for development laptops', 2500.00, 'USD', 'draft',     'medium', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('po-002', 'org-demo-001', 'PO-260111-002', 'user-requester-001', 'vendor-002', 'Software License Purchase', 'Purchase order for software licenses',   5000.00, 'USD', 'submitted', 'high',   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('po-001', 'org-demo-001', 'PO-260111-001', 'user-requester-001', 'vendor-002', 'Laptop Purchase Order',     'Purchase order for development laptops', 2500.00, 'ZMW', 'draft',     'medium', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('po-002', 'org-demo-001', 'PO-260111-002', 'user-requester-001', 'vendor-002', 'Software License Purchase', 'Purchase order for software licenses',   5000.00, 'ZMW', 'submitted', 'high',   CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
