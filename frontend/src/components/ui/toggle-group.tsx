@@ -44,8 +44,12 @@ ToggleGroup.displayName = "ToggleGroup";
 
 const ToggleGroupItem = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { value: string }
->(({ className, value, children, ...props }, ref) => {
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    value: string;
+    /** Radix-compat no-op. */
+    asChild?: boolean;
+  }
+>(({ className, value, children, asChild: _asChild, ...props }, ref) => {
   const ctx = React.useContext(ToggleGroupContext);
   const isActive = Array.isArray(ctx.value)
     ? ctx.value.includes(value)

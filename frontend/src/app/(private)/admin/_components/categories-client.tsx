@@ -263,7 +263,7 @@ export function CategoriesClient({
                         onClick={(e) => {
                           setEditingCategory(category);
                           setOpenModal(true);
-                          e.stopPropagation();
+                          e?.stopPropagation();
                         }}
                         className="h-8 gap-1.5"
                       >
@@ -276,7 +276,7 @@ export function CategoriesClient({
                         onClick={(e) => {
                           setCategoryToDelete(category);
                           setDeleteDialogOpen(true);
-                          e.stopPropagation();
+                          e?.stopPropagation();
                         }}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 gap-1.5"
                         disabled={deleteCategoryMutation.isPending}

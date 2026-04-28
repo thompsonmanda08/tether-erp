@@ -22,11 +22,8 @@ import {
   type UserRole,
   type HealthStatus,
 } from "@/lib/status-badges";
-import type { VariantProps } from "class-variance-authority";
-import type { badgeVariants } from "@/components/ui/badge";
+import type { BadgeVariant } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-type BadgeVariant = VariantProps<typeof badgeVariants>["variant"];
 
 interface StatusBadgeProps {
   status: string;

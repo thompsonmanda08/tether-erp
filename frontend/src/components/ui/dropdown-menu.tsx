@@ -3,18 +3,45 @@
 import {
   Dropdown,
   DropdownTrigger as NextUIDropdownTrigger,
-  DropdownMenu as NextUIDropdownMenu,
-  DropdownItem as NextUIDropdownItem,
-  DropdownSection,
+  DropdownMenu as RawNextUIDropdownMenu,
+  DropdownItem as RawNextUIDropdownItem,
+  DropdownSection as RawDropdownSection,
 } from "@heroui/react";
+
+// HeroUI's collection components use react-aria typed children
+// (CollectionChildren / ItemElement) which collide with shadcn's
+// arbitrary-children patterns. Cast to permissive types so call sites
+// keep their existing JSX shape.
+const NextUIDropdownMenu = RawNextUIDropdownMenu as any;
+const NextUIDropdownItem = RawNextUIDropdownItem as any;
+const DropdownSection = RawDropdownSection as any;
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
 // Main Dropdown component
-function DropdownMenu({ children, ...props }: { children: React.ReactNode }) {
-  return <Dropdown data-slot="dropdown-menu" {...props}>{children}</Dropdown>;
+function DropdownMenu({
+  children,
+  open,
+  onOpenChange,
+  ...props
+}: {
+  children: React.ReactNode;
+  /** Radix-compat controlled open state. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  return (
+    <Dropdown
+      data-slot="dropdown-menu"
+      isOpen={open}
+      onOpenChange={onOpenChange}
+      {...props}
+    >
+      {children as any}
+    </Dropdown>
+  );
 }
 
 // Portal - Not needed in NextUI
@@ -115,12 +142,15 @@ function DropdownMenuCheckboxItem({
   className,
   children,
   checked,
+  onCheckedChange: _onCheckedChange,
   ...props
 }: {
   className?: string;
   children: React.ReactNode;
   checked?: boolean;
   key?: string;
+  /** Radix-compat handler (no-op; HeroUI doesn't expose checkbox toggle). */
+  onCheckedChange?: (checked: boolean) => void;
 }) {
   return (
     <NextUIDropdownItem

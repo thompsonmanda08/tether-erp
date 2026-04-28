@@ -68,13 +68,13 @@ export function NotificationItem({
 }: NotificationItemProps) {
   const isCompact = variant === "compact";
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     onDelete?.(notification.id);
   };
 
-  const handleMarkAsRead = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleMarkAsRead = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!notification.isRead) {
       onMarkAsRead?.(notification.id);
     }

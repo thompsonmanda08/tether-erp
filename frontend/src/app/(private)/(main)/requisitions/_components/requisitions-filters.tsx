@@ -85,7 +85,7 @@ export function RequisitionsFilters({
             onChange={(e) => handleFilterChange("searchTerm", e.target.value)}
             className="col-span-2"
             classNames={{
-              wrapper: "col-span-2",
+              base: "col-span-2",
             }}
           />
           {/* Status Filter */}

@@ -21,6 +21,8 @@ function Popover({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   defaultOpen?: boolean;
+  /** Radix-compat (no-op under HeroUI). */
+  modal?: boolean;
 }) {
   return (
     <NextUIPopover

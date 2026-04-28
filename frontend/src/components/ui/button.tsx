@@ -22,6 +22,11 @@ const colorMap: Record<string, ButtonProps["color"]> = {
   secondary: "default",
 };
 
+function resolveButtonSize(s: unknown): ButtonProps["size"] {
+  if (s === "icon" || s === "default" || s == null) return "md";
+  return s as ButtonProps["size"];
+}
+
 export function Button({
   children,
   loadingText,
@@ -72,11 +77,7 @@ export function Button({
       )}
       radius="sm"
       onPress={props?.onPress || (onClick ? () => onClick(undefined as never) : undefined)}
-      size={(() => {
-        const s = props?.size;
-        if (s === "icon" || s === "default") return "md";
-        return (s as ButtonProps["size"]) || "md";
-      })()}
+      size={resolveButtonSize((props as any)?.size) as any}
       variant={mappedVariant}
       color={mappedColor}
       isIconOnly={isIconOnly}

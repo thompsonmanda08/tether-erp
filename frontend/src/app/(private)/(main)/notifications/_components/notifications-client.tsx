@@ -540,7 +540,7 @@ function NotificationRow({
                   variant="ghost"
                   size="sm"
                   onClick={(e) => {
-                    e.stopPropagation();
+                    e?.stopPropagation();
                     onMarkAsRead();
                   }}
                   className="h-8 w-8 p-0"
@@ -552,7 +552,7 @@ function NotificationRow({
                 variant="ghost"
                 size="sm"
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e?.stopPropagation();
                   onClick();
                 }}
                 className="h-8 w-8 p-0"
@@ -563,7 +563,7 @@ function NotificationRow({
                 variant="ghost"
                 size="sm"
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e?.stopPropagation();
                   onDelete();
                 }}
                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"

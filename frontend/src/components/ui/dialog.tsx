@@ -53,7 +53,13 @@ function DialogPortal({ children }: { children: React.ReactNode }) {
 }
 
 // DialogClose - Handled by NextUI Modal's onClose
-function DialogClose({ children }: { children: React.ReactNode }) {
+function DialogClose({
+  children,
+  asChild: _asChild,
+}: {
+  children: React.ReactNode;
+  asChild?: boolean;
+}) {
   return <>{children}</>;
 }
 
@@ -121,8 +127,12 @@ function DialogTitle({
 
 function DialogDescription({
   className,
+  asChild: _asChild,
   ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
+}: React.HTMLAttributes<HTMLParagraphElement> & {
+  /** Radix-compat no-op. */
+  asChild?: boolean;
+}) {
   return (
     <p
       data-slot="dialog-description"

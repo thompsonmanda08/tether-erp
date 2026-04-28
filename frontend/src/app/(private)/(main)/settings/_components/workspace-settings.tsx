@@ -315,7 +315,7 @@ export function WorkspaceSettings() {
                 Tier
               </Label>
               <p className="text-sm capitalize bg-muted px-2 py-1 rounded mt-1">
-                {currentOrganization.tier}
+                {(currentOrganization as any).tier ?? "—"}
               </p>
             </div>
             <div>

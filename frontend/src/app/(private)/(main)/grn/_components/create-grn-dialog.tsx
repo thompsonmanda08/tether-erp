@@ -434,7 +434,7 @@ export function CreateGRNDialog({
                       />
                       <Input
                         type="number"
-                        value={item.quantityOrdered}
+                        value={String(item.quantityOrdered ?? "")}
                         onChange={(e) =>
                           updateItem(
                             item._key,
@@ -448,7 +448,7 @@ export function CreateGRNDialog({
                       />
                       <Input
                         type="number"
-                        value={item.quantityReceived}
+                        value={String(item.quantityReceived ?? "")}
                         onChange={(e) =>
                           updateItem(
                             item._key,

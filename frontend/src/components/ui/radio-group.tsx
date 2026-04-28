@@ -19,6 +19,8 @@ function RadioGroup({
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   children: React.ReactNode;
+  disabled?: boolean;
+  [key: string]: any;
 }) {
   return (
     <NextUIRadioGroup

@@ -1,6 +1,13 @@
 "use client";
 
-import { Select as NextUISelect, SelectItem } from "@heroui/react";
+import {
+  Select as RawNextUISelect,
+  SelectItem as RawSelectItem,
+} from "@heroui/react";
+
+// Cast at boundary — HeroUI's CollectionChildren typing fights with arbitrary children.
+const NextUISelect = RawNextUISelect as any;
+const SelectItem = RawSelectItem as any;
 import { cn } from "@/lib/utils";
 import * as React from "react";
 import { Spinner } from "@heroui/react";
@@ -12,9 +19,13 @@ type SelectInputProps = {
   errorText?: string;
   descriptionText?: string;
   isDisabled?: boolean;
+  /** shadcn-compat alias for isDisabled. */
+  disabled?: boolean;
   isInvalid?: boolean;
   isLoading?: boolean;
   isRequired?: boolean;
+  /** shadcn-compat alias for isRequired. */
+  required?: boolean;
   value?: string;
   defaultValue?: string;
   className?: string;
@@ -58,8 +69,10 @@ const SelectField = React.forwardRef<HTMLSelectElement, SelectInputProps>(
       listItemName,
       isInvalid,
       isRequired,
+      required,
       options,
       isDisabled,
+      disabled,
       descriptionText,
       errorText = "",
     },
@@ -72,13 +85,13 @@ const SelectField = React.forwardRef<HTMLSelectElement, SelectInputProps>(
         name={name}
         selectedKeys={value ? new Set([value]) : undefined}
         defaultSelectedKeys={defaultValue ? new Set([defaultValue]) : undefined}
-        onSelectionChange={(keys) => {
+        onSelectionChange={(keys: any) => {
           const selected = Array.from(keys)[0];
           if (selected) onValueChange?.(String(selected));
         }}
-        isDisabled={isDisabled || isLoading}
+        isDisabled={isDisabled ?? disabled ?? isLoading}
         isInvalid={isInvalid || onError}
-        isRequired={isRequired}
+        isRequired={isRequired ?? required}
         errorMessage={errorText}
         description={descriptionText}
         placeholder={placeholder}

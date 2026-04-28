@@ -246,7 +246,7 @@ export default function UserRolesConfig({}: RolesPermissionsProps) {
                 className="absolute right-2 top-2 h-8 w-8 p-0"
                 title={role.isDefault ? "View system role" : "Edit role"}
                 onClick={(e) => {
-                  e.stopPropagation();
+                  e?.stopPropagation();
                   setEditingRole(role);
                   setOpenRoleModal(true);
                 }}

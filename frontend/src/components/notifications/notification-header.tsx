@@ -166,8 +166,8 @@ function NotificationItem({
   onMarkAsRead,
   onClick,
 }: NotificationItemProps) {
-  const handleMarkAsRead = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleMarkAsRead = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     onMarkAsRead(notification.id);
   };
 

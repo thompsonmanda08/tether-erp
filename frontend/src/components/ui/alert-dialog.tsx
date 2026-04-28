@@ -127,7 +127,7 @@ function AlertDialogDescription({ className, ...props }: React.HTMLAttributes<HT
 
 // ── Action button ──────────────────────────────────────────────────────────
 
-function AlertDialogAction({ className, children, onClick, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
+function AlertDialogAction({ className, children, onClick, ...props }: React.HTMLAttributes<HTMLButtonElement> & { disabled?: boolean }) {
   return (
     <Button
       data-slot="alert-dialog-action"
@@ -142,7 +142,7 @@ function AlertDialogAction({ className, children, onClick, ...props }: React.HTM
 
 // ── Cancel button ──────────────────────────────────────────────────────────
 
-function AlertDialogCancel({ className, children, onClick, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
+function AlertDialogCancel({ className, children, onClick, ...props }: React.HTMLAttributes<HTMLButtonElement> & { disabled?: boolean }) {
   return (
     <Button
       data-slot="alert-dialog-cancel"

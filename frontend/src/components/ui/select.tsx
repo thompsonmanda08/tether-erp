@@ -1,10 +1,16 @@
 "use client";
 
 import {
-  Select as NextUISelect,
-  SelectItem as NextUISelectItem,
-  SelectSection,
+  Select as RawNextUISelect,
+  SelectItem as RawNextUISelectItem,
+  SelectSection as RawSelectSection,
 } from "@heroui/react";
+
+// HeroUI Select uses CollectionChildren typing; shadcn callers pass raw nodes.
+// Cast to permissive at the boundary.
+const NextUISelect = RawNextUISelect as any;
+const NextUISelectItem = RawNextUISelectItem as any;
+const SelectSection = RawSelectSection as any;
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +75,16 @@ function SelectTrigger(_props: {
 
 // ── Content (compatibility shim) ───────────────────────────────────────────
 
-function SelectContent({ children }: { children: React.ReactNode }) {
+function SelectContent({
+  children,
+  className: _className,
+  align: _align,
+}: {
+  children: React.ReactNode;
+  /** No-op shadcn-compat (HeroUI Select renders its own listbox). */
+  className?: string;
+  align?: "start" | "center" | "end";
+}) {
   return <>{children}</>;
 }
 

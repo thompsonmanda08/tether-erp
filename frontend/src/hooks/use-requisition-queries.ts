@@ -271,7 +271,7 @@ export const useSubmitRequisitionForApproval = (
         // Already handled by offline helper
       } else {
         // Show toast based on routing path
-        const routing = result?.data?.routing;
+        const routing = (result?.data as any)?.routing;
         if (routing?.autoApproved) {
           toast.success("Requisition auto-approved! Purchase Order generated.");
         } else if (routing?.path === "accounting") {

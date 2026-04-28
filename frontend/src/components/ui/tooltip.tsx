@@ -105,11 +105,18 @@ function TooltipContent({
   className,
   children,
   sideOffset,
+  side: _side,
+  align: _align,
+  hidden: _hidden,
   ...props
 }: {
   className?: string;
   children: React.ReactNode;
   sideOffset?: number;
+  /** Radix-compat layout hints (no-op under HeroUI placement). */
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
+  hidden?: boolean;
 }) {
   const { setContent } = React.useContext(TooltipContext);
 

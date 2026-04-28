@@ -53,7 +53,8 @@ export function ActionButtons({
                 size="sm"
                 variant={action.variant || 'outline'}
                 onClick={(e) => {
-                  action.onClick(e);
+                  if (!e) return;
+                  action.onClick(e as React.MouseEvent<HTMLButtonElement>);
                   e.stopPropagation();
                 }}
                 disabled={action.disabled}

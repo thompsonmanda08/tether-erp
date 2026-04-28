@@ -33,28 +33,28 @@ export function MetricsCards({ metrics }: MetricsCardsProps) {
   const tiles: MetricTile[] = [
     {
       title: "Total documents",
-      value: metrics.totalDocuments,
+      value: metrics.totalDocuments ?? 0,
       hint: "All time",
       icon: FileText,
       tone: "info",
     },
     {
       title: "Pending approval",
-      value: metrics.pendingApproval,
+      value: metrics.pendingApproval ?? 0,
       hint: "Awaiting review",
       icon: Clock,
       tone: "warning",
     },
     {
       title: "Approved",
-      value: metrics.approvedDocuments,
+      value: metrics.approvedDocuments ?? 0,
       hint: "This period",
       icon: CheckCircle2,
       tone: "success",
     },
     {
       title: "Needs action",
-      value: metrics.documentsNeedingAction,
+      value: metrics.documentsNeedingAction ?? 0,
       hint: "Requires attention",
       icon: AlertCircle,
       tone: "danger",
