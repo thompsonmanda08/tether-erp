@@ -66,9 +66,14 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onInteractOutside: _onInteractOutside,
+  onEscapeKeyDown: _onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof ModalContent> & {
   showCloseButton?: boolean;
+  /** Radix-compat no-op props kept for shadcn caller compatibility. */
+  onInteractOutside?: (e: any) => void;
+  onEscapeKeyDown?: (e: any) => void;
 }) {
   return (
     <ModalContent

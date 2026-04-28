@@ -37,7 +37,13 @@ function AlertDialog({
 
 // ── Trigger (compatibility shim) ───────────────────────────────────────────
 
-function AlertDialogTrigger({ children }: { children: React.ReactNode }) {
+function AlertDialogTrigger({
+  children,
+  asChild: _asChild,
+}: {
+  children: React.ReactNode;
+  asChild?: boolean;
+}) {
   return <>{children}</>;
 }
 

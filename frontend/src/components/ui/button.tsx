@@ -30,7 +30,7 @@ export function Button({
   variant: customVariant,
   isIconOnly,
   ...props
-}: ButtonProps & {
+}: Omit<ButtonProps, "variant" | "size"> & {
   loadingText?: string;
   onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   variant?:
@@ -40,7 +40,10 @@ export function Button({
     | "destructive"
     | "link"
     | "secondary";
+  size?: ButtonProps["size"] | "icon" | "default";
   isIconOnly?: boolean;
+  /** Radix-compat: when true, render children as the trigger (no-op under HeroUI). */
+  asChild?: boolean;
 }) {
   // Map variant if it's a custom one
   const mappedVariant =
@@ -69,7 +72,11 @@ export function Button({
       )}
       radius="sm"
       onPress={props?.onPress || (onClick ? () => onClick(undefined as never) : undefined)}
-      size={props?.size || "md"}
+      size={(() => {
+        const s = props?.size;
+        if (s === "icon" || s === "default") return "md";
+        return (s as ButtonProps["size"]) || "md";
+      })()}
       variant={mappedVariant}
       color={mappedColor}
       isIconOnly={isIconOnly}

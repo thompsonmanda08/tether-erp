@@ -32,16 +32,21 @@ function DropdownMenuTrigger({ children, asChild, ...props }: { children: React.
 }
 
 // Content
-function DropdownMenuContent({
-  className,
-  sideOffset = 4,
-  children,
-  ...props
-}: {
+type DropdownMenuContentProps = {
   className?: string;
   sideOffset?: number;
+  /** Alignment hint kept for shadcn/ui call-site compatibility (no-op under HeroUI). */
+  align?: "start" | "center" | "end";
   children: React.ReactNode;
-}) {
+} & Omit<React.ComponentProps<typeof NextUIDropdownMenu>, "children" | "className">;
+
+function DropdownMenuContent({
+  className,
+  sideOffset: _sideOffset = 4,
+  align: _align,
+  children,
+  ...props
+}: DropdownMenuContentProps) {
   return (
     <NextUIDropdownMenu
       data-slot="dropdown-menu-content"
@@ -63,19 +68,27 @@ function DropdownMenuGroup({ children, ...props }: { children: React.ReactNode }
 }
 
 // Item
-function DropdownMenuItem({
-  className,
-  inset,
-  variant = "default",
-  children,
-  ...props
-}: {
+type DropdownMenuItemProps = {
   className?: string;
   inset?: boolean;
   variant?: "default" | "destructive";
   children: React.ReactNode;
   key?: string;
-}) {
+  /** shadcn-compat onClick — wired to HeroUI's onAction. */
+  onClick?: (e?: React.MouseEvent) => void;
+} & Omit<
+  React.ComponentProps<typeof NextUIDropdownItem>,
+  "children" | "className" | "color" | "onAction" | "key"
+>;
+
+function DropdownMenuItem({
+  className,
+  inset,
+  variant = "default",
+  onClick,
+  children,
+  ...props
+}: DropdownMenuItemProps) {
   return (
     <NextUIDropdownItem
       data-slot="dropdown-menu-item"
@@ -86,9 +99,10 @@ function DropdownMenuItem({
           "pl-8": inset,
           "text-danger": variant === "destructive",
         },
-        className
+        className,
       )}
       color={variant === "destructive" ? "danger" : "default"}
+      onPress={onClick ? () => onClick() : undefined}
       {...props}
     >
       {children}

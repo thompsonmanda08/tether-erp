@@ -56,13 +56,12 @@ function SelectValue({ placeholder }: { placeholder?: string }) {
 
 // ── Trigger (compatibility shim) ───────────────────────────────────────────
 
-function SelectTrigger({
-  className,
-  size = "default",
-  children,
-}: {
+function SelectTrigger(_props: {
   className?: string;
   size?: "sm" | "default";
+  /** Arbitrary HTML/ARIA passthrough kept for shadcn caller compatibility (shim is a no-op). */
+  id?: string;
+  "aria-label"?: string;
   children?: React.ReactNode;
 }) {
   return null; // NextUI renders its own trigger

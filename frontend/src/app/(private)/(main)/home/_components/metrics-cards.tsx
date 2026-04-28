@@ -1,74 +1,89 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DashboardMetrics } from '@/types'
-import { CheckCircle2, Clock, AlertCircle, FileText } from 'lucide-react'
+import { cn } from "@/lib/utils";
+import { DashboardMetrics } from "@/types";
+import {
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  FileText,
+  type LucideIcon,
+} from "lucide-react";
 
 interface MetricsCardsProps {
-  metrics: DashboardMetrics
+  metrics: DashboardMetrics;
 }
 
+interface MetricTile {
+  title: string;
+  value: number;
+  hint: string;
+  icon: LucideIcon;
+  tone: "info" | "warning" | "success" | "danger";
+}
+
+const toneClass: Record<MetricTile["tone"], string> = {
+  info: "bg-secondary-100 text-secondary-700 dark:bg-secondary-100/30 dark:text-secondary-300",
+  warning: "bg-warning-100 text-warning-700 dark:bg-warning-100/30 dark:text-warning-300",
+  success: "bg-success-100 text-success-700 dark:bg-success-100/30 dark:text-success-300",
+  danger: "bg-danger-100 text-danger-700 dark:bg-danger-100/30 dark:text-danger-300",
+};
+
 export function MetricsCards({ metrics }: MetricsCardsProps) {
-  const metricItems = [
+  const tiles: MetricTile[] = [
     {
-      title: 'Total Documents',
+      title: "Total documents",
       value: metrics.totalDocuments,
+      hint: "All time",
       icon: FileText,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      tone: "info",
     },
     {
-      title: 'Pending Approval',
+      title: "Pending approval",
       value: metrics.pendingApproval,
+      hint: "Awaiting review",
       icon: Clock,
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
+      tone: "warning",
     },
     {
-      title: 'Approved',
+      title: "Approved",
       value: metrics.approvedDocuments,
+      hint: "This period",
       icon: CheckCircle2,
-      color: 'text-secondary',
-      bgColor: 'bg-secondary/10',
+      tone: "success",
     },
     {
-      title: 'Needs Action',
+      title: "Needs action",
       value: metrics.documentsNeedingAction,
+      hint: "Requires attention",
       icon: AlertCircle,
-      color: 'text-destructive',
-      bgColor: 'bg-destructive/10',
+      tone: "danger",
     },
-  ]
+  ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {metricItems.map((item, index) => {
-        const Icon = item.icon
-        return (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {item.title}
-              </CardTitle>
-              <div className={`rounded-lg p-2 ${item.bgColor}`}>
-                <Icon className={`h-5 w-5 ${item.color}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{item.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {index === 3
-                  ? 'Submitted and in approval'
-                  : index === 1
-                    ? 'Awaiting review'
-                    : index === 2
-                      ? 'This period'
-                      : 'All time'}
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {tiles.map((t) => (
+        <div
+          key={t.title}
+          className="rounded-lg border border-divider bg-content1 px-5 py-4"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {t.title}
               </p>
-            </CardContent>
-          </Card>
-        )
-      })}
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+                {t.value.toLocaleString()}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{t.hint}</p>
+            </div>
+            <div className={cn("rounded-md p-2", toneClass[t.tone])}>
+              <t.icon className="h-4 w-4" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
-  )
+  );
 }
