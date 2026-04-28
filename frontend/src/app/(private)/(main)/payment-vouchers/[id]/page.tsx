@@ -1,6 +1,6 @@
 import { verifySession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { PVDetailClient } from "./_components/pv-detail-client";
+import { PaymentVoucherDetailV2 } from "@/components/documents/document-detail/wrappers/payment-voucher";
 
 export const metadata = {
   title: "Payment Voucher Details",
@@ -23,7 +23,7 @@ export default async function PVDetailPage({ params }: PVDetailPageProps) {
   const pvId = (await params).id;
 
   return (
-    <PVDetailClient
+    <PaymentVoucherDetailV2
       pvId={pvId}
       userId={session.user.id}
       userRole={(session.user as any).role}

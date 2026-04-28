@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { GRNDetailClient } from "./_components/grn-detail-client";
+import { GRNDetailV2 } from "@/components/documents/document-detail/wrappers/grn";
 import { verifySession } from "@/lib/auth";
 
 export const metadata = {
@@ -23,7 +23,7 @@ export default async function GRNDetailPage({ params }: GRNDetailPageProps) {
   const grnId = (await params).id;
 
   return (
-    <GRNDetailClient
+    <GRNDetailV2
       grnId={grnId}
       userId={session.user.id}
       userRole={(session.user as any).role}

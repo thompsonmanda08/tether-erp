@@ -1,6 +1,6 @@
 import { verifySession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { PurchaseOrderDetailClient } from "../_components/purchase-order-detail-client";
+import { PurchaseOrderDetailV2 } from "@/components/documents/document-detail/wrappers/purchase-order";
 import { getPurchaseOrderById } from "@/app/_actions/purchase-orders";
 
 export const metadata = {
@@ -29,7 +29,7 @@ export default async function PODetailPage({ params }: PODetailPageProps) {
     poResult.success && poResult.data ? poResult.data : undefined;
 
   return (
-    <PurchaseOrderDetailClient
+    <PurchaseOrderDetailV2
       purchaseOrderId={purchaseOrderId}
       userId={session.user.id}
       userRole={(session.user as any).role}

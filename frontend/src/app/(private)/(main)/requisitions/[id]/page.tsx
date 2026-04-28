@@ -1,7 +1,7 @@
 import { verifySession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getRequisitionById } from "@/app/_actions/requisitions";
-import { RequisitionDetailClient } from "../_components/requisition-detail-client";
+import { RequisitionDetailV2 } from "@/components/documents/document-detail/wrappers/requisition";
 
 export const metadata = {
   title: "Requisition Details",
@@ -33,7 +33,7 @@ export default async function RequisitionDetailPage({
       : undefined;
 
   return (
-    <RequisitionDetailClient
+    <RequisitionDetailV2
       requisitionId={requisitionId}
       userId={session.user.id}
       userRole={(session.user as any).role}
