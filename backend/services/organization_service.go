@@ -121,6 +121,40 @@ func (s *OrganizationService) CreateOrganization(name, description, logoURL, cre
 		return nil, fmt.Errorf("organization_service: set current organization: %w", err)
 	}
 
+	// Bootstrap default approval workflows (one per document type) so the org
+	// can submit documents immediately. Two-stage approval: approver -> finance.
+	defaultStages := `[{"stageNumber":1,"stageName":"Manager Approval","requiredRole":"approver","timeoutHours":24},{"stageNumber":2,"stageName":"Finance Approval","requiredRole":"finance","timeoutHours":48}]`
+	defaultWorkflows := []struct {
+		name, docType, description string
+	}{
+		{"Standard Requisition Approval", "requisition", "Default approval workflow for requisitions"},
+		{"Standard Purchase Order Approval", "purchase_order", "Default approval workflow for purchase orders"},
+		{"Budget Approval Workflow", "budget", "Default approval workflow for budgets"},
+		{"Payment Voucher Approval", "payment_voucher", "Default approval workflow for payment vouchers"},
+		{"GRN Approval Workflow", "grn", "Default approval workflow for goods received notes"},
+	}
+	for _, w := range defaultWorkflows {
+		wfID := uuid.New().String()
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO workflows (
+				id, organization_id, name, description, document_type, entity_type,
+				stages, conditions, is_default, is_active, created_by, created_at, updated_at
+			) VALUES ($1, $2, $3, $4, $5, $5, $6::jsonb, '[]'::jsonb, true, true, $7, $8, $8)`,
+			wfID, orgID, w.name, w.description, w.docType, defaultStages, createdBy, now,
+		); err != nil {
+			return nil, fmt.Errorf("organization_service: bootstrap workflow %s: %w", w.docType, err)
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO workflow_defaults (
+				id, organization_id, entity_type, default_workflow_id,
+				default_workflow_version, set_by, set_at
+			) VALUES ($1, $2, $3, $4, 1, $5, $6)`,
+			uuid.New().String(), orgID, w.docType, wfID, createdBy, now,
+		); err != nil {
+			return nil, fmt.Errorf("organization_service: bootstrap workflow_default %s: %w", w.docType, err)
+		}
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("organization_service: commit: %w", err)
 	}
