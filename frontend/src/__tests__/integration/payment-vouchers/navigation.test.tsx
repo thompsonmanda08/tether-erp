@@ -4,7 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithProviders as render } from "@/__tests__/test-utils";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
 
@@ -272,7 +273,7 @@ vi.mock("@/hooks/use-approval-history", () => ({
 
 // Import components after mocks
 import { PaymentVouchersTable } from "@/app/(private)/(main)/payment-vouchers/_components/payment-vouchers-table";
-import { PVDetailClient } from "@/app/(private)/(main)/payment-vouchers/[id]/_components/pv-detail-client";
+import { PaymentVoucherDetailV2 as PVDetailClient } from "@/components/documents/document-detail/wrappers/payment-voucher";
 
 describe("Payment Voucher Navigation", () => {
   const mockPush = vi.fn();

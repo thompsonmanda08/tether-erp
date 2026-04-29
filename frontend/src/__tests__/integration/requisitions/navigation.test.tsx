@@ -4,7 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithProviders as render } from "@/__tests__/test-utils";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
 
@@ -288,7 +289,7 @@ vi.mock("@/hooks/use-permissions", () => ({
 
 // Import components after mocks
 import { RequisitionsTable } from "@/app/(private)/(main)/requisitions/_components/requisitions-table";
-import { RequisitionDetailClient } from "@/app/(private)/(main)/requisitions/_components/requisition-detail-client";
+import { RequisitionDetailV2 as RequisitionDetailClient } from "@/components/documents/document-detail/wrappers/requisition";
 
 describe("Requisition Navigation", () => {
   const mockPush = vi.fn();

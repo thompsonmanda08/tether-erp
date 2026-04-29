@@ -6,7 +6,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithProviders as render } from "@/__tests__/test-utils";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
 
@@ -208,7 +209,7 @@ vi.mock("@/hooks/use-purchase-order-detail", () => ({
 
 // Import components after mocks
 import { PurchaseOrdersTable } from "@/app/(private)/(main)/purchase-orders/_components/purchase-orders-table";
-import { PurchaseOrderDetailClient } from "@/app/(private)/(main)/purchase-orders/_components/purchase-order-detail-client";
+import { PurchaseOrderDetailV2 as PurchaseOrderDetailClient } from "@/components/documents/document-detail/wrappers/purchase-order";
 
 describe("Purchase Order Navigation", () => {
   const mockPush = vi.fn();

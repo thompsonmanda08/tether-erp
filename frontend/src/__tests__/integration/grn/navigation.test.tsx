@@ -4,7 +4,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithProviders as render } from "@/__tests__/test-utils";
 import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
 
@@ -198,7 +199,7 @@ vi.mock("@/hooks/use-grn-detail", () => ({
 
 // Import components after mocks
 import { GrnTable } from "@/app/(private)/(main)/grn/_components/grn-table";
-import { GRNDetailClient } from "@/app/(private)/(main)/grn/[id]/_components/grn-detail-client";
+import { GRNDetailV2 as GRNDetailClient } from "@/components/documents/document-detail/wrappers/grn";
 
 describe("GRN Navigation", () => {
   const mockPush = vi.fn();
@@ -315,20 +316,9 @@ describe("GRN Navigation", () => {
       });
     });
 
-    it("should also call router.back() via Cancel button", async () => {
-      const user = userEvent.setup();
-
-      render(
-        <GRNDetailClient grnId="grn-123" userId="user-1" userRole="finance" />,
-      );
-
-      const cancelButton = screen.getByRole("button", { name: /cancel/i });
-      await user.click(cancelButton);
-
-      await waitFor(() => {
-        expect(mockBack).toHaveBeenCalled();
-      });
-    });
+    // Cancel button removed in Phase 1 generic DocumentDetail revamp;
+    // back navigation is unified under the single Back affordance.
+    it.skip("should also call router.back() via Cancel button (removed in revamp)", () => {});
   });
 
   describe("Routing Integration", () => {
